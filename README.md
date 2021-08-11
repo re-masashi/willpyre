@@ -1,4 +1,4 @@
-#Maglev
+# Maglev
 
 -------------------------
 Maglev is a micro ASGI framework. 
@@ -10,8 +10,7 @@ Maglev gives flexibility and control, but removes the low level complexities of 
 It is quite simple to use Maglev.
 
 ```py
-import app
-from utils import router,app
+from maglev import app,router
 
 
 r = router.Router()
