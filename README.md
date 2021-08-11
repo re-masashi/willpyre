@@ -5,7 +5,7 @@ Maglev is a micro ASGI framework.
 Maglev gives flexibility and control, but removes the low level complexities of ASGI.
 -------------------------
 
-##[Quickstart][#Quickstart]
+## [Quickstart](#Quickstart)
 
 It is quite simple to use Maglev.
 
@@ -28,10 +28,13 @@ Just that will do.
 
 It should run with any ASGI server like ``Uvicorn``, ``Daphne``, ``Hypercorn``.
 
-To run with Uvicorn, 
-
+To run with Uvicorn, install Uvicorn using 
 ```bash
-$ uvicorn <file>:app
+pip install uvicorn
+```
+and then
+```bash
+uvicorn <file>:app
 ```
 
 The framework is written in pure-python and can run in PyPy or CPython.
