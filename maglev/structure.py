@@ -27,6 +27,7 @@ class Request:
 
 class Response404:
     headers = dict()
+    cookies = dict()
     headers['content-type'] = 'text/html'
     body = 'Not found!!'
     status = 404
