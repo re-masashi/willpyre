@@ -1,6 +1,5 @@
 import typing
 from . import router,structure
-import inspect
 
 class App:
 
@@ -23,15 +22,15 @@ class App:
           structure.Request(scope["method"],scope["path"],scope["headers"]),
           self.response)
       if response_.cookies != {}:
-        response_cookies = [[b'Set-Cookie',response_.cookies[cookie_].cookie_str.encode()]for cookie_ in response_.cookies.keys()]
+        response_cookies = [[b'Set-Cookie',cookie_.encode() + response_.cookies[cookie_].cookie_str]for cookie_ in response_.cookies.keys()]
       else:
-        response_cookies = [[]]
+        response_cookies = []
       await send({#letting the router object handle all the requests
         'type': 'http.response.start',
         'status': response_.status,
         'headers': [
         [value.encode() for value in header_pair] for header_pair in list(response_.headers.items())
-        ]
+        ] + response_cookies
         })
       
       await send({
