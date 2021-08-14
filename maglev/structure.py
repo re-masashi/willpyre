@@ -33,8 +33,31 @@ class Response404:
     status = 404
 
 class Cookie:
-  __slots__ = ('value','max_age','cookie_str')
-  def __init__(self,value:str,max_age:int):
-    self.value = value
-    self.max_age = max_age
-    self.cookie_str = value + ';Max-Age=' + str(max_age)
+  '''
+  This class is used to send cookies to the user.
+  Eg:
+  ```py
+  @router.get('/')
+  async def index(request,response):
+    response.cookies["sessid"] = Cookie("no_login",20*60)
+    ...
+    return response
+  ```
+  This takes: 
+  `value` as string,
+  `max_age` as integer (default = 0),
+  `same_site` as string (default = "Lax"),
+  `secure` as boolean (default=True)
+   Is not a callable class
+   '''
+
+  __slots__ = ('value','max_age','cookie_str','same_site','secure')
+
+  def __init__(self, value:str, max_age:int=0, same_site:str="Lax", secure:bool=True):
+    self.value = value.encode()
+    self.max_age = str(max_age).encode()
+    self.same_site = same_site.encode()
+    self.secure = secure
+    self.cookie_str = self.value + b';Max-Age=' + self.max_age + b';SameSite=' + same_site.encode()
+    if secure == True:
+      self.cookie_str += b';Secure'
