@@ -10,18 +10,18 @@ Maglev gives flexibility and control, but removes the low level complexities of 
 It is quite simple to use Maglev.
 
 ```py
-from maglev import app,router
+from maglev import App,Router
 
 
-r = router.Router()
+router = Router()
 
-@r.get('/')
+@router.get('/')
 async def index(req,res):
 	res.body = "<h1>Please fasten your seatbelts!!</h1>"
 	return res
 
 
-app = app.App(r,__name__)
+app = App(router,__name__)
 ```
 
 Just that will do.
