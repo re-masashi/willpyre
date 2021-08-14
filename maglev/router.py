@@ -57,7 +57,10 @@ class Router:
 
   async def handle(self,request,response):
     try:
-      response_ = await self.routes[request.method][request.path](request,response)
+      if request.method == "HEAD":
+        response_ = await self.routes["GET"][request.path](request,response)
+      else:
+        response_ = await self.routes[request.method][request.path](request,response)
       return response_
     except KeyError:
       resp = structure.Response404()
