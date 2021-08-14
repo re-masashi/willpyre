@@ -89,3 +89,5 @@ class Cookie:
     self.cookie_str = self.value + b';Max-Age=' + self.max_age + b';SameSite=' + same_site.encode()
     if secure == True:
       self.cookie_str += b';Secure'
+      
+ 
