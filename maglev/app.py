@@ -22,18 +22,30 @@ class App:
     self.response = response
 
 #Websocket implementation yet to do.
-  async def __call__(self,scope,recieve,send):
+  async def __call__(self,scope,receive,send):
     '''This will be serving as the ASGI app.
     The information about request will ge gained from the `scope` argument and response will be sent by `send`
     '''
 
     if scope["type"] == "http":
+      body = b''
+      if scope["method"] in self.router.bodied_methods:
+        more_body = True
+        while more_body:
+          message = await receive()
+          if message["type"] == "http.request.body":
+            body += message.get("body", b"")
+            more_body = message.get("more_body", False)
+          else:
+            more_body = False
+
       response_ = await self.router.handle(
           structure.Request(
-            scope["method"],
-            scope["path"],
-            scope["headers"],
-            parse.parse_qs(scope["query_string"].decode()),
+            method = scope["method"],
+            path = scope["path"],
+            headers = scope["headers"],
+            query = parse.parse_qs(scope["query_string"].decode()),
+            body = parse.parse_qs(body.decode())
             ),
           self.response)
 
