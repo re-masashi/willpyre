@@ -16,7 +16,7 @@ class Router:
     self.routes["CONNECT"] = {}
     self.routes["OPTIONS"] = {}
     self.routes["TRACE"] = {}
-
+    self.bodied_methods = ("POST","PUT","PATCH")
   def add_route(self,path:str,method:str,handler:typing.Callable) -> None:
     self.routes[method][path] = handler
   

@@ -37,11 +37,14 @@ class Request:
   headers = dict()
   cookies = dict()
   query = dict()
-  def __init__(self, method:str, path:str, headers, query, *args):
+  body = dict()
+  def __init__(self, method:str, path:str, headers, query, body, *args):
     self.method = method
     self.path = path
     self.query = query
     self.query.update( (k,query[k][0]) for k in query )
+    self.body = body
+    self.body.update( (k,body[k][0]) for k in body )
     for header_pair in headers:
       self.headers[header_pair[0].decode()]=header_pair[1].decode()
     if 'cookie' in self.headers.keys():
@@ -51,6 +54,7 @@ class Request:
         lambda x: x!='',path.split('/')
         )
       )
+    print(self.body)
 
 class Response404:
     headers = dict()
@@ -89,5 +93,3 @@ class Cookie:
     self.cookie_str = self.value + b';Max-Age=' + self.max_age + b';SameSite=' + same_site.encode()
     if secure == True:
       self.cookie_str += b';Secure'
-      
- 
