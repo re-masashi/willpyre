@@ -18,6 +18,8 @@ class Router:
     self.routes["TRACE"] = {}
     self.bodied_methods = ("POST","PUT","PATCH")
   def add_route(self,path:str,method:str,handler:typing.Callable) -> None:
+    if path[-1] != '/':
+      path += '/' 
     self.routes[method][path] = handler
   
   def add_method(self,method:str):
@@ -56,6 +58,8 @@ class Router:
     return decorator
 
   async def handle(self,request,response):
+    if request.path[-1] != '/':
+      request.path += '/' 
     try:
       if request.method == "HEAD":
         response_ = await self.routes["GET"][request.path](request,response)
@@ -65,6 +69,6 @@ class Router:
     except KeyError:
       resp = structure.Response404()
       return resp
-    #Value: Response object(9/8/21).
+    #Value: Response object(9/8/21)
 
 
