@@ -16,14 +16,25 @@ class Router:
     self.routes["CONNECT"] = {}
     self.routes["OPTIONS"] = {}
     self.routes["TRACE"] = {}
+
     self.bodied_methods = ("POST","PUT","PATCH")
+  
   def add_route(self,path:str,method:str,handler:typing.Callable) -> None:
     if path[-1] != '/':
       path += '/' 
     self.routes[method][path] = handler
   
   def add_method(self,method:str):
-    '''This should be used to adding HTTP methods to the routing dictionary '''
+    '''
+    This should be used to adding HTTP methods to the routing dictionary 
+
+    Args:
+      self: The :class:`Router`
+      method(str): The method to add for the router to handle.
+    Raises:
+      NotImplementedError
+    '''
+    
     #self.routes[method] = {}
     raise NotImplementedError
 
@@ -35,6 +46,10 @@ class Router:
     @router.get('/'):
     def landing():
         return "Index page"
+
+    Args:
+      self: :class:`Router`
+      path(str): The Request path
     """
     def decorator(handler: typing.Callable) -> typing.Callable:
       self.add_route(path=path,method="GET",handler=handler)
@@ -51,6 +66,10 @@ class Router:
         form = req.body
         ...
         res.send("OK! Form submitted") 
+    
+    Args:
+      self: :class:`Router`
+      path(str): The Request path
     """
     def decorator(handler: typing.Callable) -> typing.Callable:
       self.add_route(path=path,method="POST",handler=handler)
@@ -58,6 +77,16 @@ class Router:
     return decorator
 
   async def handle(self,request,response):
+    '''
+    The handle function wil handle the requests and send appropriate responses,
+    based on the functions defined.
+
+    Args:
+      request: :class:`maglev.structure.Request`
+      response: :class:`maglev.structure.Response`
+    Returns:
+      :class:`maglev.structure.Response`
+    '''
     if request.path[-1] != '/':
       request.path += '/' 
     try:
@@ -69,6 +98,6 @@ class Router:
     except KeyError:
       resp = structure.Response404()
       return resp
-    #Value: Response object(9/8/21)
+    #Value: Response object(9/8/21).
 
 

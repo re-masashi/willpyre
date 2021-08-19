@@ -4,7 +4,9 @@ from urllib import parse
 
 class App:
   '''
-  The App class is used as the app which will be used for all activities.
+  The App class is used as the app.
+
+  It which will be used for all activities.
   This requires a `Router` to be attached for serving responses accordingly.
   To instantiate a `name` value is also needed. 
   The __call__ function has the ASGI app.
@@ -25,6 +27,12 @@ class App:
   async def __call__(self,scope,receive,send):
     '''This will be serving as the ASGI app.
     The information about request will ge gained from the `scope` argument and response will be sent by `send`
+    
+    Args:
+      self: The App class
+      scope: The `scope` to communicate as per ASGI specification.
+      recieve: ASGI recieve function
+      send: ASGI send function
     '''
 
     if scope["type"] == "http":
@@ -33,11 +41,8 @@ class App:
         more_body = True
         while more_body:
           message = await receive()
-          if message["type"] == "http.request.body":
-            body += message.get("body", b"")
-            more_body = message.get("more_body", False)
-          else:
-            more_body = False
+          body += message.get("body", b"")
+          more_body = message.get("more_body", False)
 
       response_ = await self.router.handle(
           structure.Request(

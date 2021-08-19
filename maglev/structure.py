@@ -39,6 +39,15 @@ class Request:
   query = dict()
   body = dict()
   def __init__(self, method:str, path:str, headers, query, body, *args):
+    '''
+    Args:
+      self: The :class:`maglev.structure.Request`
+      method(str): The HTTP method used by the client.
+      path(str): The path requested by the client.
+      headers(list): The HTTP headers obtained from the ASGI scope, of send.
+      query(str): The `GET` query string, obtained from ASGI scope of send.
+      body(str): The HTTP request body. 
+    '''
     self.method = method
     self.path = path
     self.query = query
@@ -54,7 +63,6 @@ class Request:
         lambda x: x!='',path.split('/')
         )
       )
-    print(self.body)
 
 class Response404:
     headers = dict()
@@ -80,16 +88,30 @@ class Cookie:
   `max_age` as integer (default = 0),
   `same_site` as string (default = "Lax"),
   `secure` as boolean (default=True)
-   Is not a callable class
+  `http_only` as boolean (default = True)
+   It is not a callable class
    '''
 
   __slots__ = ('value','max_age','cookie_str','same_site','secure')
 
-  def __init__(self, value:str, max_age:int=0, same_site:str="Lax", secure:bool=True):
+  def __init__(self, value:str, max_age:int=0, same_site:str="Lax", secure:bool=True, http_only:bool=True):
+    
+    '''
+    Args:
+      value(str): The value of cookie.
+      max_age(int): The max_age of the cookie. Defaults to zero.
+      same_site(str): The value of the same_site attribute. Defaults to Lax. Find more about same_site in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+      secure(bool): Is the cookie a secure cookie or not. Defaults to True
+      http_only(bool): States if the cookie is HttpOnly cookie.
+    '''
     self.value = value.encode()
     self.max_age = str(max_age).encode()
     self.same_site = same_site.encode()
     self.secure = secure
-    self.cookie_str = self.value + b';Max-Age=' + self.max_age + b';SameSite=' + same_site.encode()
+    self.http_only = http_only
+    self.cookie_str = self.value + b'; Max-Age=' + self.max_age + b'; SameSite=' + same_site.encode()
     if secure == True:
-      self.cookie_str += b';Secure'
+      self.cookie_str += b'; Secure'
+    if http_only = True
+      self.cookie_str += b'; HttpOnly'
+
