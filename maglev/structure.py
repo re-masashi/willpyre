@@ -33,7 +33,7 @@ class Request:
   `query` as a dict(string,array). It is obtained from the server as a string and is then parsed into the dictionary with `urllib.parse.parse_qs`
 
   '''
-
+  params = dict()
   headers = dict()
   cookies = dict()
   query = dict()
@@ -92,9 +92,15 @@ class Cookie:
    It is not a callable class
    '''
 
-  __slots__ = ('value','max_age','cookie_str','same_site','secure')
+  __slots__ = ('value','max_age','cookie_str','same_site','secure','http_only')
 
-  def __init__(self, value:str, max_age:int=0, same_site:str="Lax", secure:bool=True, http_only:bool=True):
+  def __init__(
+    self, 
+    value:str,
+    max_age:int=0, 
+    same_site:str="Lax", 
+    secure:bool=True, 
+    http_only:bool=True):
     
     '''
     Args:
@@ -112,6 +118,6 @@ class Cookie:
     self.cookie_str = self.value + b'; Max-Age=' + self.max_age + b'; SameSite=' + same_site.encode()
     if secure == True:
       self.cookie_str += b'; Secure'
-    if http_only = True
+    if http_only == True:
       self.cookie_str += b'; HttpOnly'
 

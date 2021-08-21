@@ -1,10 +1,10 @@
 import typing
 import inspect
 from . import structure
+from . import kua
 
-
-class Router:
-  '''Router class has the Methods, paths, and handlers.'''
+class StaticRouter:
+  '''StaticRouter class has the HTTP methods, paths, and handlers.'''
   def __init__(self):
     self.routes = dict()
     self.routes["GET"] = {}
@@ -101,3 +101,30 @@ class Router:
     #Value: Response object(9/8/21).
 
 
+class Router(StaticRouter):
+    
+  def __init__(self):
+    self.KuaRoutes = kua.Routes()
+    super().__init__()
+
+  def add_route(self,path:str,method:str,handler:typing.Callable) -> None:
+    if path[-1] != '/':
+      path += '/' 
+    variablized_url = self.KuaRoutes.add(path)
+    self.routes[method][variablized_url] = handler
+
+  async def handle(self,request,response):
+    if request.path[-1] != '/':
+      request.path += '/'
+    try:
+      request.params, variablized_url = self.KuaRoutes.match(request.path)
+      if variablized_url not in self.routes[request.method]:
+        print(f'{request.path} is not registered urls')
+      if request.method == "HEAD": 
+        response_ = await self.routes["GET"][variablized_url](request,response)
+      else:
+        response_ = await self.routes[request.method][variablized_url](request,response)
+      return response_
+    except kua.RouteError,KeyError:
+      response_ = structure.Response404()
+      return response_
