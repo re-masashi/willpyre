@@ -292,13 +292,13 @@ class Routes:
         url = normalize_url(url)
         parts = self._deconstruct_url(url)
         match = self._match(parts)
-        for param in match.keys():
-            original_url.replace(match.params[param],param)
-        if original_url[-1] == '/':
-            original_url= original_url[:-1]
+        for param in list(match.keys()):
+            original_url = original_url.replace(match[param],param)
+        if original_url[-1] != '/':
+            original_url +=  '/'
         return self._match(parts), original_url
-
-    @functools.lru_cache(maxsize=256)    
+    
+    @functools.lru_cache(maxsize=256)
     def add(self, url: str) -> str:
         """
         Register a URL pattern into\
@@ -326,7 +326,7 @@ class Routes:
                 variablized_url += part[1:] + '/'
                 part = self._VAR_NODE
             else:
-                variablized_url += part
+                variablized_url += part + '/'
 
             curr_partial_routes = (curr_partial_routes
                                    .setdefault(part, {}))

@@ -125,6 +125,6 @@ class Router(StaticRouter):
       else:
         response_ = await self.routes[request.method][variablized_url](request,response)
       return response_
-    except kua.RouteError,KeyError:
+    except (kua.RouteError,KeyError):
       response_ = structure.Response404()
       return response_
