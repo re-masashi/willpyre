@@ -3,15 +3,19 @@ import typing
 
 class Response:
   '''
+
+
   This class contains the Response data to be sent in a manageable format.
-  The response object does not take external parametrs, but has some attributes which can be set by accessing.
-  The attributes are:
-  `headers` of type dict, it has the HTTP headers to be sent back to the user.
-  `cookies` of type dict, it has the cookies to send back to the user. The cookies to be sent must be of type `maglev.structure.Cookie`
-  eg:
-  ```py
-  response.cookies["sessid"] = Cookie("no_login",20*60)
-  ```
+  The `response` argument of the functions defined, objects of this class. 
+
+
+  The response object does not take external parameters, but has some attributes which can be set:
+  Args:
+    headers(dict[str,str]): It is the HTTP headers set as a dict. Only [content-type] =  text/html is set by default.
+    hookies(dict[str,maglev.Structure.Cookie])
+    body(str)
+    status(int)
+  
   ''' 
   headers = dict()
   cookies = dict()
@@ -24,13 +28,17 @@ class Response:
 
 class Request:
   '''
+
+
   This class contains the information requested by the user.
-  The functions called by `Router.handler` take this as the first argument.
-  It takes:
-  `headers` as an array of headers passed by the server, and converts them to a dict.
-  `method` as a string which is passed by the server. It is the HTTP request method.
-  `path` as a string which is passed by the server. It is the HTTP request path.
-  `query` as a dict(string,array). It is obtained from the server as a string and is then parsed into the dictionary with `urllib.parse.parse_qs`
+  The functions called by ``maglev.Router.handle`` take this as the first argument.
+  
+  Args:
+    headers(list[list[bytes,bytes]]): Array of headers passed by the server, and converts them to a dict.
+    method(str): It is the HTTP request method.
+    path(str):  It is the HTTP request path.
+    query(dict[str,list[str]]): It is obtained from the server as a string and is then parsed into the dictionary with `urllib.parse.parse_qs`
+
 
   '''
   params = dict()
@@ -40,13 +48,15 @@ class Request:
   body = dict()
   def __init__(self, method:str, path:str, headers, query, body, *args):
     '''
+
     Args:
-      self: The :class:`maglev.structure.Request`
+      self: The class ``maglev.structure.Request``
       method(str): The HTTP method used by the client.
       path(str): The path requested by the client.
       headers(list): The HTTP headers obtained from the ASGI scope, of send.
-      query(str): The `GET` query string, obtained from ASGI scope of send.
+      query(str): The ``GET`` query string, obtained from ASGI scope of send.
       body(str): The HTTP request body. 
+    
     '''
     self.method = method
     self.path = path
@@ -75,22 +85,22 @@ class Response404:
 class Cookie:
   '''
   This class is used to send cookies to the user.
-  Eg:
-  ```py
-  @router.get('/')
-  async def index(request,response):
-    response.cookies["sessid"] = Cookie("no_login",20*60)
-    ...
-    return response
-  ```
-  This takes: 
-  `value` as string,
-  `max_age` as integer (default = 0),
-  `same_site` as string (default = "Lax"),
-  `secure` as boolean (default=True)
-  `http_only` as boolean (default = True)
-   It is not a callable class
-   '''
+
+  Args: 
+      value(str): Cookie value 
+      max_age(int): Max age of the cookie (default = 0)
+      same_site(str): Same-site attribute value (default = "Lax")
+      secure(bool):Secure attribute of the cookie. (default=True)
+      http_only(bool): If True, cookie cannot be accesed from JavaScript. (default = True)
+
+
+  It is not a callable class.
+
+  .. note ::
+      Try to keep the http_only to True as it prevents XSS attacks. 
+      Attackers cannot steal cookies from users through Cross-Site scripting if it is set.
+  
+  '''
 
   __slots__ = ('value','max_age','cookie_str','same_site','secure','http_only')
 
@@ -103,12 +113,14 @@ class Cookie:
     http_only:bool=True):
     
     '''
+
     Args:
-      value(str): The value of cookie.
-      max_age(int): The max_age of the cookie. Defaults to zero.
-      same_site(str): The value of the same_site attribute. Defaults to Lax. Find more about same_site in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
-      secure(bool): Is the cookie a secure cookie or not. Defaults to True
-      http_only(bool): States if the cookie is HttpOnly cookie.
+        value(str): The value of cookie.
+        max_age(int): The max_age of the cookie. Defaults to zero.
+        same_site(str): The value of the same_site attribute. Defaults to Lax. Find more about same_site in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+        secure(bool): Is the cookie a secure cookie or not. Defaults to True
+        http_only(bool): States if the cookie is HttpOnly cookie.
+    
     '''
     self.value = value.encode()
     self.max_age = str(max_age).encode()

@@ -4,7 +4,9 @@ from . import structure
 from . import kua
 
 class StaticRouter:
-  '''StaticRouter class has the HTTP methods, paths, and handlers.'''
+  '''
+  StaticRouter class has the HTTP methods, paths, and handlers.
+  '''
   def __init__(self):
     self.routes = dict()
     self.routes["GET"] = {}
@@ -31,8 +33,10 @@ class StaticRouter:
     Args:
       self: The :class:`Router`
       method(str): The method to add for the router to handle.
+
     Raises:
       NotImplementedError
+    
     '''
     
     #self.routes[method] = {}
@@ -41,40 +45,40 @@ class StaticRouter:
   def get(self,path:str,**opts) -> typing.Callable:
     """
     This is meant to be used as a decorator on a function, that will be executed on a get query to the path.
-    Eg: 
-    
-    @router.get('/'):
-    def landing():
-        return "Index page"
 
+    Usage::
+
+        @router.get('/'):
+        def landing(request,response):
+          #Some application logic 
+          return response
+
+
+    
     Args:
       self: :class:`Router`
       path(str): The Request path
+
+
     """
     def decorator(handler: typing.Callable) -> typing.Callable:
       self.add_route(path=path,method="GET",handler=handler)
       return handler
-    return decorator
+    return None
   
   def post(self,path:str,**opts)-> typing.Callable:
     """
     This is meant to be used as a decorator on a function, that will be executed on a post query to the path.
-    Eg: 
-    
-    @router.post('/form'):
-    def landing(req,res):
-        form = req.body
-        ...
-        res.send("OK! Form submitted") 
     
     Args:
       self: :class:`Router`
       path(str): The Request path
+    
     """
     def decorator(handler: typing.Callable) -> typing.Callable:
       self.add_route(path=path,method="POST",handler=handler)
       return handler
-    return decorator
+    return None
 
   async def handle(self,request,response):
     '''
@@ -86,6 +90,7 @@ class StaticRouter:
       response: :class:`maglev.structure.Response`
     Returns:
       :class:`maglev.structure.Response`
+
     '''
     if request.path[-1] != '/':
       request.path += '/' 
