@@ -64,7 +64,7 @@ class StaticRouter:
     def decorator(handler: typing.Callable) -> typing.Callable:
       self.add_route(path=path,method="GET",handler=handler)
       return handler
-    return None
+    return decorator
   
   def post(self,path:str,**opts)-> typing.Callable:
     """
@@ -78,7 +78,7 @@ class StaticRouter:
     def decorator(handler: typing.Callable) -> typing.Callable:
       self.add_route(path=path,method="POST",handler=handler)
       return handler
-    return None
+    return decorator
 
   async def handle(self,request,response):
     '''
@@ -123,8 +123,6 @@ class Router(StaticRouter):
       request.path += '/'
     try:
       request.params, variablized_url = self.KuaRoutes.match(request.path)
-      if variablized_url not in self.routes[request.method]:
-        print(f'{request.path} is not registered urls')
       if request.method == "HEAD": 
         response_ = await self.routes["GET"][variablized_url](request,response)
       else:

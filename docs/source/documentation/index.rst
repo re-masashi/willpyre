@@ -6,6 +6,7 @@ Documentation
 
 .. automodule:: maglev
    :members:
+   :undoc-members:
    :show-inheritance:
 
 .. toctree ::

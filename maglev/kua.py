@@ -325,6 +325,8 @@ class Routes:
                 curr_key_parts.append(part[1:])
                 variablized_url += part[1:] + '/'
                 part = self._VAR_NODE
+            elif part == '':
+                variablized_url += part
             else:
                 variablized_url += part + '/'
 

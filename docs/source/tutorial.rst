@@ -28,11 +28,14 @@ For example if you use it with Uvicorn..,
 Please substitute the ``<file>`` with the name of your file. For instance, if you call your file ``example.py``, and you type this code. Then you must use ``example:app``.
 
 Now, if Uvicorn returns a response like this...
-```
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-```
+
+.. code-block :: text
+
+	INFO:     Waiting for application startup.
+	INFO:     Application startup complete.
+	INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+
+
 Then the aplication is runnning and you have setup everything fine..
 
 Now if you go to localhost:8000/, 

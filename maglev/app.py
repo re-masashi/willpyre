@@ -18,7 +18,13 @@ class App:
     name:str,
     response:structure.Response=structure.Response
     ):
-    
+    def startup():
+      pass
+
+    def shutdown():
+      pass
+
+    self.config = {"startup":startup,"shutdown":shutdown}
     self.router = router
     self.name = name
     self.response = response
@@ -34,7 +40,7 @@ class App:
       recieve: ASGI recieve function
       send: ASGI send function
     '''
-
+####HTTP
     if scope["type"] == "http":
       body = b''
       if scope["method"] in self.router.bodied_methods:
@@ -71,8 +77,19 @@ class App:
         'type':'http.response.body',
         'body': response_.body.encode()
           })
-        
-
-    
-
+####End HTTP
+####lifespan
+    elif scope["type"] == "lifespan":
+      while True:
+        message = await receive()
+        if message['type'] == 'lifespan.startup':
+          self.config["startup"]()
+          await send({'type': 'lifespan.startup.complete'})
+        elif message['type'] == 'lifespan.shutdown':
+          self.config["shutdown"]()
+          await send({'type': 'lifespan.shutdown.complete'})
+          return
+#####End lifespan
+#####Websocket
+#####End web socket
 

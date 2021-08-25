@@ -3,4 +3,5 @@
 
 .. automodule:: maglev.router
    :members:
+   :undoc-members:
    :show-inheritance:
