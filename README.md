@@ -3,7 +3,7 @@
 -------------------------
 
 [![Documentation Status](https://readthedocs.org/projects/maglev/badge/?version=latest)](https://maglev.readthedocs.io/en/latest/?badge=latest)
-
+[![Test and PEP8](https://github.com/Nafi-Amaan-Hossain/maglev/actions/workflows/actions.yml/badge.svg)](https://github.com/Nafi-Amaan-Hossain/maglev/actions/workflows/actions.yml)
 
 Maglev is a micro ASGI framework. 
 Maglev gives flexibility and control, but removes the low level complexities of ASGI.
