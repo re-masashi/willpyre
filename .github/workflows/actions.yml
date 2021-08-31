@@ -1,4 +1,4 @@
-name: Python package
+name: Test and PEP8
 
 on: [push]
 
