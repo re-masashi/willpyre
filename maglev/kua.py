@@ -110,7 +110,6 @@ _Route = collections.namedtuple(
     ['key_parts'])
 
 
-
 class Routes:
     """
     Route URLs to registered URL patterns.
@@ -159,7 +158,7 @@ class Routes:
 
     _VAR_ANY_BREAK = ':*break'
 
-    def __init__(self, max_depth: int=40) -> None:
+    def __init__(self, max_depth: int = 40) -> None:
         """
         :ivar _routes: \
         Contain a graph with the parts of\
@@ -210,7 +209,7 @@ class Routes:
 
         return parts
 
-    def _match(self, parts: Sequence[str]) :
+    def _match(self, parts: Sequence[str]):
         """
         Match URL parts to a registered pattern.
 
@@ -223,10 +222,11 @@ class Routes:
 
         :private:
         """
-        route_match = None  #type: dict
+        route_match = None  # type: dict
         route_variable_parts = tuple()  # type: VariablePartsType
         # (route_partial, variable_parts, depth)
-        to_visit = [(self._routes, tuple(), 0)]  # type: List[Tuple[dict, tuple, int]]
+        # type: List[Tuple[dict, tuple, int]]
+        to_visit = [(self._routes, tuple(), 0)]
 
         # Walk through the graph,
         # keep track of all possible
@@ -274,10 +274,9 @@ class Routes:
             raise RouteError('No match')
 
         return make_params(
-                key_parts=route_match.key_parts,
-                variable_parts=route_variable_parts
-                )
-            
+            key_parts=route_match.key_parts,
+            variable_parts=route_variable_parts
+        )
 
     @functools.lru_cache(maxsize=512)
     def match(self, url: str):
@@ -293,11 +292,11 @@ class Routes:
         parts = self._deconstruct_url(url)
         match = self._match(parts)
         for param in list(match.keys()):
-            original_url = original_url.replace(match[param],param)
+            original_url = original_url.replace(match[param], param)
         if original_url[-1] != '/':
-            original_url +=  '/'
+            original_url += '/'
         return self._match(parts), original_url
-    
+
     @functools.lru_cache(maxsize=256)
     def add(self, url: str) -> str:
         """
