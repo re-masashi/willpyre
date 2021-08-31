@@ -3,7 +3,8 @@ import enum
 from urllib import parse
 import email.parser
 
-def parse_multipart(data,decode=False):
+
+def parse_multipart(data, decode=False):
     msg = email.parser.BytesParser().parsebytes(data)
 
     return {
@@ -12,9 +13,8 @@ def parse_multipart(data,decode=False):
     }
 
 
-
 class _WSConnectionState(enum.Enum):
-    __slots__ = ("CONNECTING","CONNECTED","DISCONNECTED")
+    __slots__ = ("CONNECTING", "CONNECTED", "DISCONNECTED")
     CONNECTING = 1
     CONNECTED = 2
     DISCONNECTED = 3
@@ -70,7 +70,7 @@ class Request:
     query = dict()
     body = dict()
 
-    def __init__(self, method: str, path: str, raw_body:bytes, raw_query:bytes, headers, *args):
+    def __init__(self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args):
         '''
 
         Args:
@@ -88,12 +88,12 @@ class Request:
         self.raw_body = raw_body
         self.query = parse.parse_qs(raw_query.decode())
         self.query.update((k, self.query[k][0]) for k in self.query)
-        if self.headers.get("content-type","NO_CONTENT_TYPE") == "multipart/form-data":
+        if self.headers.get("content-type", "NO_CONTENT_TYPE") == "multipart/form-data":
             self.body = parse_multipart(raw_body)
         else:
             self.body = parse.parse_qs(raw_body.decode())
             self.body.update((k, self.body[k][0]) for k in self.body)
-        
+
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
 
@@ -172,5 +172,5 @@ class WebSocket:
             query: str,
             params: dict,
             headers: dict,
-            subprotocol: str=""):
+            subprotocol: str = ""):
         pass
