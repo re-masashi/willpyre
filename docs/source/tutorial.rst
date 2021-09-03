@@ -119,6 +119,7 @@ You can access it via ``request.query.get("name")``, and you will get the value 
 If a client sends a POST request to ``/login``. With a form that is something like this,
 
 ..code-block ::html
+
 	<form action="/login" method="POST">
 	<input type="text" name="id">
 	<input type="submit">
@@ -126,7 +127,7 @@ If a client sends a POST request to ``/login``. With a form that is something li
 
 Then, you can access the ``id`` of the user(see the form) with the help of 
 ``request.body.get('id')``.
-If he fills in his ID to be, "user101", you will get "user101" in "``reqeust.body.get('id')``"
+If he fills in his ID to be, "user", you will get "user" in "``request.body.get('id')``"
 
 The same goes for multipart file uploads.
 
@@ -164,9 +165,6 @@ The content-type of the response can be set with ``response.headers["content-typ
 ``response.cookies``
 --------------------
 These are the cookies sent to the client. Must be of type ``structure.Cookie``
-
-..autoclass :: willpyre.structure.Cookie
-
 
 
 
