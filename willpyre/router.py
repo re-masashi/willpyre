@@ -149,9 +149,10 @@ class Router(StaticRouter):
         if path[-1] != '/':
             path += '/'
         try:
-            params,variablized_url = self.KuaRoutes.match(
-                request.path)
+            params, variablized_url = self.KuaRoutes.match(
+                scope["path"])
             conn = await self.routes[variablized_url](scope, send, recieve)
         except (kua.RouteError, KeyError):
             await self.send({"type": "websocket.close", "code": 1006})
+
 
