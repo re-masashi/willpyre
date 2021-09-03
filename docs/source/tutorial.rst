@@ -8,11 +8,11 @@ For example:
 
 .. code-block :: python
 
-	from maglev import App,Router
+	from willpyre import App,Router
 	router = Router()
 	@router.get('/')
 	async def index(request,response):
-		response.body = "Hello, Maglev"
+		response.body = "Hello, Willpyre"
 		return response
 
 	app = App(router,__name__)
@@ -39,7 +39,7 @@ Now, if Uvicorn returns a response like this...
 Then the aplication is runnning and you have setup everything fine..
 
 Now if you go to localhost:8000/, 
-you will find the text **Hello, Maglev** to be present there.
+you will find the text **Hello, Willpyre** to be present there.
 
 The ``@router.get()`` decorator required one path, to be specified. Here, it was passed as ``@router.get('/')``. Hence, only requests to '/' using HTTP ``GET`` method will be replied to. Others will lead to a 404 response.
 
@@ -47,9 +47,9 @@ The ``@router.get()`` decorator required one path, to be specified. Here, it was
 URL Routing
 -----------
 
-Maglev allows you to define static routes and dynamic using the ``Router`` class.
+Willpyre allows you to define static routes and dynamic using the ``Router`` class.
 
-This can be imported from the ``maglev`` module.
+This can be imported from the ``willpyre`` module.
 In the first example, the app will send a response only to requests to '/' or  http://localhost:8000**/**
 This is because, nothing else was specified for other paths.
 
@@ -61,11 +61,11 @@ Thus, the above example would become..
 
 .. code-block :: python
 
-	from maglev import App,Router
+	from willpyre import App,Router
 	router = Router()
 	@router.get('/')
 	async def index(request,response):
-		response.body = "Hello, Maglev"
+		response.body = "Hello, Willpyre"
 		return response
 
 	router.get('/anotherpath',index)
@@ -100,3 +100,76 @@ You will see that, you will find the text "**You requested the variable hello**"
 
 ``request.params`` is a dictionary object. And as you specified the variable name as ``:var`` you can access its value ``var`` as a key in the ``request.params`` dictionary.
 
+Request object
+==============
+
+The ``request`` object is useful for getting info about the incoming request. Such as cookies, headers, query, request body, etc. Most of these are in the form of a dictionary.
+
+``request.query``
+-----------------
+If a client sends a request to ``/hello?name=Sasuke``
+You can access it via ``request.query.get("name")``, and you will get the value ``Sasuke``.
+
+.. note ::
+	As the data is in dictionary format, please use query.get(value) instead of query[value].
+	If the value is missing, and you use the quesry[value] notation, you will raise a KeyError. For other dictionary objects as well, try to use the .get() function, a fallback value with the .get() is even better. 
+
+``request.body``
+----------------
+If a client sends a POST request to ``/login``. With a form that is something like this,
+
+..code-block ::html
+	<form action="/login" method="POST">
+	<input type="text" name="id">
+	<input type="submit">
+	</form>
+
+Then, you can access the ``id`` of the user(see the form) with the help of 
+``request.body.get('id')``.
+If he fills in his ID to be, "user101", you will get "user101" in "``reqeust.body.get('id')``"
+
+The same goes for multipart file uploads.
+
+
+``request.cookies``
+-------------------
+These contain the cookies of the client that have been sent, i.e, request cookies. You can access the cookies via ``request.cookies.get(cookienamehere)``.
+
+``request.headers``
+-------------------
+The HTTP headers sent by the client. All are in lower-case as per ASGI specification.
+Eg: ``request.headers["content-type"]``
+
+Response object
+===============
+This object contains data to be sent to the client.
+Such as content-type, cookies, status, and the response body.
+
+
+
+``response.headers``
+--------------------
+The headers to sent to the client.
+Eg: 
+..code-block ::python
+
+	response.headers["x-powered-by"] = "willpyre"
+
+
+The content-type of the response can be set with ``response.headers["content-type"]``
+
+
+
+
+``response.cookies``
+--------------------
+These are the cookies sent to the client. Must be of type ``structure.Cookie``
+
+..autoclass :: willpyre.structure.Cookie
+
+
+
+
+``response.status``
+-------------------
+The status code of the response. Must be an int.

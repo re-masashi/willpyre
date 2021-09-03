@@ -1,7 +1,7 @@
-**maglev.app** 
+**willpyre.app** 
 --------------
 
-.. automodule:: maglev.app
+.. automodule:: willpyre.app
    :members:
    :undoc-members:
    :show-inheritance:

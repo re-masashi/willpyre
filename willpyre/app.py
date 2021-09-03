@@ -17,7 +17,7 @@ class App:
         self,
         router: router.Router,
         name: str,
-        response: structure.Response = structure.Response
+        response: structure.Response = structure.Response()
     ):
         def startup():
             pass

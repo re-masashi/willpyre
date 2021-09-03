@@ -1,23 +1,22 @@
-# Maglev 
-![LOGO](logo.png)
+# Willpyre
 
 -------------------------
 
-[![Documentation Status](https://readthedocs.org/projects/maglev/badge/?version=latest)](https://maglev.readthedocs.io/en/latest/?badge=latest)
-[![Test and PEP8](https://github.com/Nafi-Amaan-Hossain/maglev/actions/workflows/actions.yml/badge.svg)](https://github.com/Nafi-Amaan-Hossain/maglev/actions/workflows/actions.yml)
+[![Documentation Status](https://readthedocs.org/projects/willpyre/badge/?version=latest)](https://willpyre.readthedocs.io/en/latest/?badge=latest)
+[![Test and PEP8](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml/badge.svg)](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml)
 
-Maglev is a micro ASGI framework. 
-Maglev gives flexibility and control, but removes the low level complexities of ASGI.
+Willpyre is a micro ASGI framework. 
+Willpyre gives flexibility and control, but abstracts ASGI to some extent and adds reusability to your code.
 -------------------------
 
 ## [Quickstart](#Quickstart)
 
 
 
-It is quite simple to use Maglev.
+It is quite simple to use Willpyre.
 
 ```py
-from maglev import App,Router
+from willpyre import App,Router
 
 
 router = Router()
@@ -48,10 +47,10 @@ The framework is written in pure-python and can run in PyPy or CPython.
 
 ----
 
-### Why Maglev?
+### Why Willpyre?
 
-Maglev wants to be precise in action that can be performed on a URL, allowing only one method while registering a URL.
+Willpyre wants to be precise in action that can be performed on a URL, allowing only one method while registering a URL.
 However, it won't enforce it. You can create your own Router by etending the Router class and implementing other approaches.
-Maglev's API is heavily inspired by `ExpressJS` and wants to keep the entire context in `request` and `response`.
+Willpyre's API wants to keep the entire context in `request` and `response`.
 
 ------

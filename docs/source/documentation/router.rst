@@ -1,7 +1,7 @@
-**maglev.router**
+**willpyre.router**
 -----------------
 
-.. automodule:: maglev.router
+.. automodule:: willpyre.router
    :members:
    :undoc-members:
    :show-inheritance:

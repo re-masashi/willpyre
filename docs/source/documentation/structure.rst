@@ -1,7 +1,7 @@
-**maglev.structure**
+**willpyre.structure**
 ---------------------
 
-.. automodule:: maglev.structure
+.. automodule:: willpyre.structure
    :members:
    :undoc-members:
    :show-inheritance:

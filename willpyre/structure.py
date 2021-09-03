@@ -13,13 +13,6 @@ def parse_multipart(data, decode=False):
     }
 
 
-class _WSConnectionState(enum.Enum):
-    __slots__ = ("CONNECTING", "CONNECTED", "DISCONNECTED")
-    CONNECTING = 1
-    CONNECTED = 2
-    DISCONNECTED = 3
-
-
 class Response:
     '''
 
@@ -39,14 +32,19 @@ class Response:
       status(int)
 
     '''
-    headers = dict()
-    cookies = dict()
-    headers['content-type'] = 'text/html'
-    body = ''
-    status = 200
-
-    def append(self, message):
-        self.body += message
+    def __init__(
+        self, 
+        status=200,
+        content_type="text/html",
+        body='',
+        headers=dict(),
+        cookies=dict()):
+        self.headers = headers
+        self.cookies = cookies
+        self.content_type = content_type
+        self.headers['content-type'] = self.content_type
+        self.body = body
+        self.status = status
 
 
 class Request:
@@ -161,16 +159,3 @@ class Cookie:
             self.cookie_str += b'; Secure'
         if http_only == True:
             self.cookie_str += b'; HttpOnly'
-
-
-class WebSocket:
-    '''WebSocket connection object, send, recieves, closes all WS connections'''
-
-    def __init__(
-            self,
-            path: str,
-            query: str,
-            params: dict,
-            headers: dict,
-            subprotocol: str = ""):
-        pass

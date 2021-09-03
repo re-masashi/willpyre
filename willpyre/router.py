@@ -90,10 +90,10 @@ class StaticRouter:
         based on the functions defined.
 
         Args:
-          request: :class:`maglev.structure.Request`
-          response: :class:`maglev.structure.Response`
+          request: :class:`willpyre.structure.Request`
+          response: :class:`willpyre.structure.Response`
         Returns:
-          :class:`maglev.structure.Response`
+          :class:`willpyre.structure.Response`
 
         '''
         if request.path[-1] != '/':
@@ -145,4 +145,13 @@ class Router(StaticRouter):
             return response_
 
     async def handleWS(self, scope, send, recieve):
-        pass
+        path = scope["path"]
+        if path[-1] != '/':
+            path += '/'
+        try:
+            params,variablized_url = self.KuaRoutes.match(
+                request.path)
+            conn = await self.routes[variablized_url](scope, send, recieve)
+        except (kua.RouteError, KeyError):
+            await self.send({"type": "websocket.close", "code": 1006})
+

@@ -1,5 +1,5 @@
-from maglev import App, Router
-from maglev.structure import Cookie
+from willpyre import App, Router, JSONResponse, Cookie
+
 
 router = Router()
 
@@ -39,5 +39,10 @@ async def cookie(request, response):
     response.cookies["sessID"] = Cookie("Default", 60*60)
     response.body = "OK"
     return response
+
+
+@router.get('/json')
+async def json_(req,res):
+        return JSONResponse({'a':'b'})
 
 main = App(router, __name__)

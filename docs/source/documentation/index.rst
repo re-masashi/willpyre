@@ -4,7 +4,7 @@ Documentation
 **Module contents**
 -------------------
 
-.. automodule:: maglev
+.. automodule:: willpyre
    :members:
    :undoc-members:
    :show-inheritance:
