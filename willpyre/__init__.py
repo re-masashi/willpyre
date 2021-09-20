@@ -21,7 +21,7 @@ class TextResponse(structure.Response):
 		self,
 		data,
 		status=200,
-        content_type="application/json",
+        content_type="text/plain",
         headers=dict(),
         cookies=dict()):
 		super().__init__(headers=headers,cookies=cookies,content_type=content_type,status=status)
