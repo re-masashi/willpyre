@@ -295,6 +295,8 @@ class Routes:
             original_url = original_url.replace(match[param], param)
         if original_url[-1] != '/':
             original_url += '/'
+        if original_url[0] != '/':
+            original_url = '/' + original_url
         return self._match(parts), original_url
 
     @functools.lru_cache(maxsize=256)

@@ -32,13 +32,14 @@ class Response:
       status(int)
 
     '''
+
     def __init__(
-        self, 
-        status=200,
-        content_type="text/html",
-        body='',
-        headers=dict(),
-        cookies=dict()):
+            self,
+            status=200,
+            content_type="text/html",
+            body='',
+            headers=dict(),
+            cookies=dict()):
         self.headers = headers
         self.cookies = cookies
         self.content_type = content_type

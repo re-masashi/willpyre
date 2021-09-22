@@ -1,5 +1,4 @@
 import typing
-import inspect
 from . import structure
 from . import kua
 
@@ -129,6 +128,24 @@ class Router(StaticRouter):
         variablized_url = self.WSKuaRoutes.add(path)
         self.ws_routes[variablized_url] = handler
 
+    def embed_router(self, endpoint: str, router) -> None:
+        if endpoint[0] == '/':
+            endpoint = endpoint[1:]
+        if endpoint[-1] == '/':
+            endpoint = endpoint[:-1]
+        if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
+            self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
+
+        self.KuaRoutes._routes[endpoint] = router.KuaRoutes._routes
+        if router.KuaRoutes._routes.get('', "NOT_FOUND") != "NOT_FOUND":
+            self.KuaRoutes._routes[endpoint][":route"] = router.KuaRoutes._routes[''][':route']
+            self.KuaRoutes._routes[endpoint].pop('')
+
+        for method in router.routes.keys():
+            for route in router.routes[method].keys():
+                self.routes[method]['/' + endpoint + route] = router.routes[method][route]
+
+        
     async def handle(self, request, response):
         if request.path[-1] != '/':
             request.path += '/'
@@ -144,15 +161,13 @@ class Router(StaticRouter):
             response_ = structure.Response404()
             return response_
 
-    async def handleWS(self, scope, send, recieve):
+    async def handleWS(self, scope, send, recieve) -> None:
         path = scope["path"]
         if path[-1] != '/':
             path += '/'
         try:
             params, variablized_url = self.KuaRoutes.match(
                 scope["path"])
-            conn = await self.routes[variablized_url](scope, send, recieve)
+            await self.ws_routes[variablized_url](scope, send, recieve)
         except (kua.RouteError, KeyError):
             await self.send({"type": "websocket.close", "code": 1006})
-
-

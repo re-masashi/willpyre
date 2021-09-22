@@ -1,7 +1,6 @@
 Tutorial
 ===========
 
-If you have used ExpressJS, you will find the API to be similar.
 The functions that handle the actions on a page, are called handlers. The handlers must have ``request`` and ``response`` parameters. 
 
 For example:
@@ -15,7 +14,7 @@ For example:
 		response.body = "Hello, Willpyre"
 		return response
 
-	app = App(router,__name__)
+	app = App(router)
 
 The ``app`` is an ASGI callable. You can use it with any ASGI server.
 
@@ -50,7 +49,7 @@ URL Routing
 Willpyre allows you to define static routes and dynamic using the ``Router`` class.
 
 This can be imported from the ``willpyre`` module.
-In the first example, the app will send a response only to requests to '/' or  http://localhost:8000**/**
+In the first example, the app will send a response only to requests to '/' or  http://localhost:8000/
 This is because, nothing else was specified for other paths.
 
 The router specifies only one method to be specified on one path.
@@ -64,14 +63,54 @@ Thus, the above example would become..
 	from willpyre import App,Router
 	router = Router()
 	@router.get('/')
-	async def index(request,response):
+	async def index(request, response):
 		response.body = "Hello, Willpyre"
 		return response
 
 	router.get('/anotherpath',index)
-	app = App(router,__name__)
+	app = App(router)
 
 After running this with Uvicorn, you will see that if you go to http://localhost:8000/anotherpath/ The response will be the same as in http://localhost:8000
+
+Embed a router(Experimental)
+----------------------------
+
+.. code-block :: python
+
+	from willpyre import App, Router
+	main_router = Router()
+	@main_router.get('/')
+	async def index(request, response):
+		response.body = "Index"
+		return response
+
+	subrouter = Router()
+	@subrouter.get('/')
+	async def subindex(req, res):
+		response.body = "Subrouter index"
+		return response
+
+	@subrouter.post('/hello')
+	async def subfoo(req, res):
+		response.body = "Foo"
+		return response
+
+	main_router.embed_router("/sub", sub_router)
+
+	app = App(main_router)
+
+Now, you can request to http://localhost:8000/sub/, and you will see the text 
+``"Subrouter index"``. If you go to http://localhost:8000/sub/hello, you will see "Foo".
+And the other links will work as it is.
+
+.. note :: 
+
+	Do not make changes to the router after embedding it.
+
+The router has an internal representation of routes.
+This representation is embedded in the router which wraps another router.
+You can check the source code, to see how its implemented.
+
 
 Variables in URL path
 ---------------------
@@ -118,7 +157,7 @@ You can access it via ``request.query.get("name")``, and you will get the value 
 ----------------
 If a client sends a POST request to ``/login``. With a form that is something like this,
 
-..code-block ::html
+..code-block :: html
 
 	<form action="/login" method="POST">
 	<input type="text" name="id">
@@ -152,7 +191,7 @@ Such as content-type, cookies, status, and the response body.
 --------------------
 The headers to sent to the client.
 Eg: 
-..code-block ::python
+..code-block :: python
 
 	response.headers["x-powered-by"] = "willpyre"
 
@@ -171,3 +210,7 @@ These are the cookies sent to the client. Must be of type ``structure.Cookie``
 ``response.status``
 -------------------
 The status code of the response. Must be an int.
+
+
+
+ 

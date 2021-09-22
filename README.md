@@ -27,7 +27,7 @@ async def index(req,res):
 	return res
 
 
-app = App(router,__name__)
+app = App(router)
 ```
 
 Just that will do.

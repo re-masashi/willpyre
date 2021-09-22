@@ -16,7 +16,6 @@ class App:
     def __init__(
         self,
         router: router.Router,
-        name: str,
         response: structure.Response = structure.Response()
     ):
         def startup():
@@ -27,7 +26,6 @@ class App:
 
         self.config = {"startup": startup, "shutdown": shutdown}
         self.router = router
-        self.name = name
         self.response = response
 
 # Websocket implementation yet to do.
@@ -93,5 +91,5 @@ class App:
 # End lifespan
 # WebSocket
         elif scope["type"] == "websockets":
-            connection = await self.router.handleWS(scope=scope, send=send, recieve=receive)
+            await self.router.handleWS(scope=scope, send=send, recieve=receive)
 # End WebSocket
