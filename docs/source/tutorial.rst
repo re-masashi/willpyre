@@ -157,7 +157,7 @@ You can access it via ``request.query.get("name")``, and you will get the value 
 ----------------
 If a client sends a POST request to ``/login``. With a form that is something like this,
 
-..code-block :: html
+.. code-block :: html
 
 	<form action="/login" method="POST">
 	<input type="text" name="id">
