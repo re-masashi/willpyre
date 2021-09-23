@@ -101,12 +101,12 @@ class Request:
              for _ in self.headers['cookie'].split(';')]
 
 
-class Response404:
-    headers = dict()
-    cookies = dict()
-    headers['content-type'] = 'text/html'
-    body = 'Not found!!'
-    status = 404
+class Response404(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers['content-type'] = 'text/html'
+        self.body = 'Not found!!'
+        self.status = 404
 
 
 class Cookie:

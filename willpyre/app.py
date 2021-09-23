@@ -24,8 +24,13 @@ class App:
         def shutdown():
             pass
 
-        self.config = {"startup": startup, "shutdown": shutdown}
-        self.router = router
+        self.config = {
+            "startup": startup,
+            "shutdown": shutdown,
+            "router_config": {
+                "404Response": structure.Response404()}
+            }
+        self.router = router(config=config["router_config"])
         self.response = response
 
 # Websocket implementation yet to do.

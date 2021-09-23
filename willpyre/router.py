@@ -71,7 +71,7 @@ class StaticRouter:
 
     def post(self, path: str, **opts) -> typing.Callable:
         """
-        This is meant to be used as a decorator on a function, that will be executed on a post query to the path.
+        This is meant to be used as a decorator on a function, that will be executed on a post request to the path.
 
         Args:
           self: :class:`Router`
@@ -80,6 +80,90 @@ class StaticRouter:
         """
         def decorator(handler: typing.Callable) -> typing.Callable:
             self.add_route(path=path, method="POST", handler=handler)
+            return handler
+        return decorator
+
+    def put(self, path: str, **opts) -> typing.Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on a put request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+        def decorator(handler: typing.Callable) -> typing.Callable:
+            self.add_route(path=path, method="PUT", handler=handler)
+            return handler
+        return decorator
+
+    def fetch(self, path: str, **opts) -> typing.Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on a fetch request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+        def decorator(handler: typing.Callable) -> typing.Callable:
+            self.add_route(path=path, method="FETCH", handler=handler)
+            return handler
+        return decorator
+
+    def patch(self, path: str, **opts) -> typing.Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on a PATCH request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+        def decorator(handler: typing.Callable) -> typing.Callable:
+            self.add_route(path=path, method="PATCH", handler=handler)
+            return handler
+        return decorator
+
+    def connect(self, path: str, **opts) -> typing.Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on a connect request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+        def decorator(handler: typing.Callable) -> typing.Callable:
+            self.add_route(path=path, method="CONNECT", handler=handler)
+            return handler
+        return decorator
+
+    def options(self, path: str, **opts) -> typing.Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on an options request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+        def decorator(handler: typing.Callable) -> typing.Callable:
+            self.add_route(path=path, method="OPTIONS", handler=handler)
+            return handler
+        return decorator
+
+    def trace(self, path: str, **opts) -> typing.Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on a trace request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+        def decorator(handler: typing.Callable) -> typing.Callable:
+            self.add_route(path=path, method="TRACE", handler=handler)
             return handler
         return decorator
 
@@ -111,9 +195,10 @@ class StaticRouter:
 
 class Router(StaticRouter):
 
-    def __init__(self):
+    def __init__(self, config: dict = {}):
         self.KuaRoutes = kua.Routes()
         self.WSKuaRoutes = kua.Routes()
+        self.config = config
         super().__init__()
 
     def add_route(self, path: str, method: str, handler: typing.Callable) -> None:
@@ -158,7 +243,7 @@ class Router(StaticRouter):
                 response_ = await self.routes[request.method][variablized_url](request, response)
             return response_
         except (kua.RouteError, KeyError):
-            response_ = structure.Response404()
+            response_ = self.config.get("404Response", structure.Response404)
             return response_
 
     async def handleWS(self, scope, send, recieve) -> None:

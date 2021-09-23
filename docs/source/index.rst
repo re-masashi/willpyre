@@ -1,5 +1,5 @@
 Willpyre 
-=======
+=======+
 
 Willpyre provides abstraction over ASGI.
 It supports HTTP without external dependencies, and websockets
@@ -15,6 +15,7 @@ Contents
 .. toctree ::
    installation
    tutorial
+   advanced
    documentation/index
 
 
