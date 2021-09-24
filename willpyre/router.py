@@ -243,7 +243,7 @@ class Router(StaticRouter):
                 response_ = await self.routes[request.method][variablized_url](request, response)
             return response_
         except (kua.RouteError, KeyError):
-            response_ = self.config.get("404Response", structure.Response404)
+            response_ = self.config.get("404Response", structure.Response404())
             return response_
 
     async def handleWS(self, scope, send, recieve) -> None:
