@@ -28,7 +28,7 @@ class App:
             "startup": startup,
             "shutdown": shutdown,
             "router_config": {
-                "404Response": structure.Response404()}
+                "404Response": structure.Response404()
             }
         self.router = router(config=config["router_config"])
         self.response = response
