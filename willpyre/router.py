@@ -23,6 +23,7 @@ class StaticRouter:
         self.bodied_methods = ("POST", "PUT", "PATCH")
 
         self.ws_routes = dict()
+        self.config = dict()
 
     def add_route(self, path: str, method: str, handler: typing.Callable) -> None:
         if path[-1] != '/':
