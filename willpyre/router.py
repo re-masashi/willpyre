@@ -195,10 +195,9 @@ class StaticRouter:
 
 class Router(StaticRouter):
 
-    def __init__(self, config: dict = {}):
+    def __init__(self):
         self.KuaRoutes = kua.Routes()
         self.WSKuaRoutes = kua.Routes()
-        self.config = config
         super().__init__()
 
     def add_route(self, path: str, method: str, handler: typing.Callable) -> None:
