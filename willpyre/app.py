@@ -31,7 +31,7 @@ class App:
                 "404Response": structure.Response404()},
             }
         self.router = router
-        router.config = self.confing["router_config"]
+        router.config = self.config["router_config"]
         self.response = response
 
 # Websocket implementation yet to do.
