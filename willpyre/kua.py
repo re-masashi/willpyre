@@ -6,7 +6,6 @@ from typing import (
     Tuple,
     List,
     Sequence,
-    Any,
     Dict,
     Union)
 

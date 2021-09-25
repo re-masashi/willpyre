@@ -1,6 +1,4 @@
-import typing
 from . import router, structure
-from urllib import parse
 
 
 class App:
@@ -9,7 +7,7 @@ class App:
 
     It which will be used for all activities.
     This requires a `Router` to be attached for serving responses accordingly.
-    To instantiate a `name` value is also needed. 
+    To instantiate a `name` value is also needed.
     The __call__ function has the ASGI app.
     '''
 
@@ -28,8 +26,11 @@ class App:
             "startup": startup,
             "shutdown": shutdown,
             "router_config": {
-                "404Response": structure.Response404()},
-            }
+                "404Response": structure.Response404(),
+                "405Response": structure.Response405(),
+                "500Response": structure.Response500()
+            },
+        }
         self.router = router
         router.config = self.config["router_config"]
         self.response = response
@@ -66,8 +67,12 @@ class App:
                 self.response)
 
             if response_.cookies is not dict():
-                response_cookies = [[b'Set-Cookie', cookie_.encode() + b'=' + response_.cookies[cookie_].cookie_str]
-                                    for cookie_ in response_.cookies.keys()]
+                response_cookies = [
+                    [
+                        b'Set-Cookie',
+                        cookie_.encode() + b'=' + response_.cookies[cookie_].cookie_str
+                    ]
+                    for cookie_ in response_.cookies.keys()]
             else:
                 response_cookies = []
             await send({

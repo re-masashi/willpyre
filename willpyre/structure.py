@@ -1,5 +1,3 @@
-import typing
-import enum
 from urllib import parse
 import email.parser
 
@@ -17,17 +15,18 @@ class Response:
     '''
 
 
-    This class contains the Response data to be sent, 
+    This class contains the Response data to be sent,
     in a manageable format.
     The `response` argument of the functions defined,
-    objects of this class. 
+    objects of this class.
 
 
-    The response object does not take external parameters,
+    The response object does not require external parameters,
     but has some attributes which can be set:
     Args:
-      headers(dict[str,str]): It is the HTTP headers set as a dict. Only [content-type] =  text/html is set by default.
-      hookies(dict[str,maglev.Structure.Cookie])
+      headers(dict[str,str]):\
+      It is the HTTP headers set as a dict. Only [content-type] =  text/html is set by default.
+      cookies(dict[str,maglev.Structure.Cookie])
       body(str)
       status(int)
 
@@ -78,7 +77,7 @@ class Request:
           path(str): The path requested by the client.
           headers(list): The HTTP headers obtained from the ASGI scope, of send.
           query(str): The ``GET`` query string, obtained from ASGI scope of send.
-          body(str): The HTTP request body. 
+          body(str): The HTTP request body.
 
         '''
         self.method = method
@@ -109,12 +108,28 @@ class Response404(Response):
         self.status = 404
 
 
+class Response405(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers['content_type'] = 'text/html'
+        self.body = "Method not allowed"
+        self.status = 405
+
+
+class Response500(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers['content_type'] = 'text/html'
+        self.body = "Internal Server Error"
+        self.status = 500
+
+
 class Cookie:
     '''
     This class is used to send cookies to the user.
 
-    Args: 
-        value(str): Cookie value 
+    Args:
+        value(str): Cookie value
         max_age(int): Max age of the cookie (default = 0)
         same_site(str): Same-site attribute value (default = "Lax")
         secure(bool):Secure attribute of the cookie. (default=True)
@@ -124,8 +139,9 @@ class Cookie:
     It is not a callable class.
 
     .. note ::
-        Try to keep the http_only to True as it prevents XSS attacks. 
+        Try to keep the http_only to True as it prevents XSS attacks.
         Attackers cannot steal cookies from users through Cross-Site scripting if it is set.
+        However, it requires an HTTPS connection, so you can disable it during development.
 
     '''
 
@@ -156,7 +172,7 @@ class Cookie:
         self.http_only = http_only
         self.cookie_str = self.value + b'; Max-Age=' + \
             self.max_age + b'; SameSite=' + same_site.encode()
-        if secure == True:
+        if secure is True:
             self.cookie_str += b'; Secure'
-        if http_only == True:
+        if http_only is True:
             self.cookie_str += b'; HttpOnly'

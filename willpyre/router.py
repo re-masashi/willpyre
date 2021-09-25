@@ -32,7 +32,7 @@ class StaticRouter:
 
     def add_method(self, method: str):
         '''
-        This should be used to adding HTTP methods to the routing dictionary 
+        This should be used to adding HTTP methods to the routing dictionary
 
         Args:
           self: The :class:`Router`
@@ -43,7 +43,7 @@ class StaticRouter:
 
         '''
 
-        #self.routes[method] = {}
+        # self.routes[method] = {}
         raise NotImplementedError
 
     def get(self, path: str, **opts) -> typing.Callable:
@@ -54,7 +54,7 @@ class StaticRouter:
 
             @router.get('/'):
             def landing(request,response):
-              #Some application logic 
+              #Some application logic
               return response
 
 
@@ -226,11 +226,14 @@ class Router(StaticRouter):
             self.KuaRoutes._routes[endpoint][":route"] = router.KuaRoutes._routes[''][':route']
             self.KuaRoutes._routes[endpoint].pop('')
 
-        for method in router.routes.keys():
-            for route in router.routes[method].keys():
-                self.routes[method]['/' + endpoint + route] = router.routes[method][route]
+        [
+            self.routes[method].update(
+                (f"/{endpoint}{route}", router.routes[method][route])
+                for route in router.routes[method].keys()
+            )
+            for method in router.routes.keys()
+        ]
 
-        
     async def handle(self, request, response):
         if request.path[-1] != '/':
             request.path += '/'
@@ -241,9 +244,13 @@ class Router(StaticRouter):
                 response_ = await self.routes["GET"][variablized_url](request, response)
             else:
                 response_ = await self.routes[request.method][variablized_url](request, response)
-            return response_
-        except (kua.RouteError, KeyError):
+        except kua.RouteError:
             response_ = self.config.get("404Response", structure.Response404())
+        except KeyError:
+            response_ = self.config.get("405Response", structure.Response405())
+        else:
+            response_ = self.config.get("500Response", structure.Response500())
+        finally:
             return response_
 
     async def handleWS(self, scope, send, recieve) -> None:

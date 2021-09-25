@@ -9,8 +9,6 @@ async def index(request, response):
     response.body = "index page"
     return response
 
-print(router.routes["GET"])
-
 
 @router.get('/login/')
 async def login(request, response):
@@ -36,7 +34,7 @@ async def api(request, response):
 
 @router.get('/cookie')
 async def cookie(request, response):
-    response.cookies["sessID"] = Cookie("Default", 60*60)
+    response.cookies["sessID"] = Cookie("Default", 60 * 60)
     response.body = "OK"
     return response
 
