@@ -190,7 +190,8 @@ Such as content-type, cookies, status, and the response body.
 ``response.headers``
 --------------------
 The headers to sent to the client.
-Eg: 
+Eg:
+
 .. code-block :: python
 
 	response.headers["x-powered-by"] = "willpyre"
