@@ -248,7 +248,7 @@ class Router(StaticRouter):
             response_ = self.config.get("404Response", structure.Response404())
         except KeyError:
             response_ = self.config.get("405Response", structure.Response405())
-        else:
+        except:
             response_ = self.config.get("500Response", structure.Response500())
         finally:
             return response_
