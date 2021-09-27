@@ -49,6 +49,8 @@ async def other_methods(req,res):
 
 
 router.add_route('/others',"FETCH", other_methods)
+router.add_route('/others',"TRACE", other_methods)
+router.add_route('/others',"PATCH", other_methods)
 
 
 main = App(router)
