@@ -58,7 +58,7 @@ def _unwrap(variable_parts: VariablePartsType):
     while curr_parts:
         curr_parts, (var_type, part) = curr_parts
 
-        if var_type == Routes._VAR_ANY_NODE:
+        if var_type == Routes._VAR_ANY_NODE:#pragma: no cover
             var_any.append(part)
             continue
 
@@ -112,28 +112,17 @@ _Route = collections.namedtuple(
 class Routes:
     """
     Route URLs to registered URL patterns.
+    URL matcher supports ``:var`` for matching dynamic.
 
-    Thread safety: adding routes is not thread-safe,\
-    it should be done on import time, everything else is.
-
-    URL matcher supports ``:var`` for matching dynamic\
-    path parts and ``:*var`` for matching one or more parts.
-
-    Path parts are matched in the following order: ``static > var > any-var``.
+    Path parts are matched in the following order: ``static > var``.
 
     Usage::
 
         routes = kua.Routes()
-        routes.add('api/:foo', {'GET': my_get_controller})
+        routes.add('api/:foo')
         route = routes.match('api/hello-world')
         route.params
         # {'foo': 'hello-world'}
-
-        # Matching any path
-        routes.add('assets/:*foo', {})
-        route = routes.match('assets/user/profile/avatar.jpg')
-        route.params
-        # {'foo': ('user', 'profile', 'avatar.jpg')}
 
         # Error handling
         try:
@@ -145,9 +134,7 @@ class Routes:
             pass
 
     :ivar max_depth: The maximum URL depth\
-    (number of parts) willing to match. This only\
-    takes effect when one or more URLs matcher\
-    make use of any-var (i.e: ``:*var``), otherwise the\
+    (number of parts) willing to match. The\
     depth of the deepest URL is taken.
     """
 
@@ -298,7 +285,6 @@ class Routes:
             original_url = '/' + original_url
         return self._match(parts), original_url
 
-    @functools.lru_cache(maxsize=256)
     def add(self, url: str) -> str:
         """
         Register a URL pattern into\

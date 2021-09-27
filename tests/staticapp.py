@@ -1,8 +1,6 @@
-from willpyre import App, Router, JSONResponse, Cookie, TextResponse
+from willpyre import App, router, JSONResponse, Cookie, TextResponse
 
-
-router = Router()
-
+router = router.StaticRouter()
 
 @router.get('/')
 async def index(request, response):
@@ -25,13 +23,6 @@ async def post_login(request, response):
     return response
 
 
-@router.get('/api/:var')
-async def api(request, response):
-    response.body = "You requested the variable " + \
-        request.params.get("var", "and you got it..")
-    return response
-
-
 @router.get('/cookie')
 async def cookie(request, response):
     response.cookies["sessID"] = Cookie("Default", 60 * 60)
@@ -43,12 +34,16 @@ async def cookie(request, response):
 async def json_(req, res):
     return JSONResponse({'a': 'b'})
 
-
 async def other_methods(req,res):
     return TextResponse("others")
 
 
 router.add_route('/others',"FETCH", other_methods)
+router.add_route('/others',"PATCH", other_methods)
+router.add_route('/others',"PUT", other_methods)
+router.add_route('/others',"CONNECT", other_methods)
+router.add_route('/others',"OPTIONS", other_methods)
+router.add_route('/others',"TRACE", other_methods)
 
 
 main = App(router)

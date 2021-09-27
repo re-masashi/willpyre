@@ -101,6 +101,6 @@ class App:
                     return
 # End lifespan
 # WebSocket
-        elif scope["type"] == "websockets":
+        elif scope["type"] == "websockets": # pragma: no cover
             await self.router.handleWS(scope=scope, send=send, recieve=receive)
 # End WebSocket

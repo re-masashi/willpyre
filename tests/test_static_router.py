@@ -1,5 +1,5 @@
 from async_asgi_testclient import TestClient
-from myapp import main
+from staticapp import main
 import pytest
 
 
@@ -40,15 +40,6 @@ async def test_trailing_slash():
 
 
 @pytest.mark.asyncio
-async def test_url_vars():
-
-    async with TestClient(main) as client:
-        resp = await client.get("/api/hello")
-        assert resp.status_code == 200
-        assert resp.text == "You requested the variable hello"
-
-
-@pytest.mark.asyncio
 async def test_utils():
 
     async with TestClient(main) as client:
@@ -56,19 +47,6 @@ async def test_utils():
         assert resp.json() == {'a': 'b'}
         assert resp.headers["Content-Type"] == "application/json"
 
-@pytest.mark.asyncio
-async def test_response404():
-    async with TestClient(main) as client:
-        resp = await client.get("/non-exhistent")
-        assert resp.text == "Not found!!"
-        assert resp.status_code == 404
-
-@pytest.mark.asyncio
-async def test_response405():
-    async with TestClient(main) as client:
-        resp = await client.open("/login", method="NO_SUCH_METHOD")
-        assert resp.text == "Method not allowed"
-        assert resp.status_code == 405
 
 @pytest.mark.asyncio
 async def test_put():
@@ -91,3 +69,4 @@ async def test_put():
     async with TestClient(main) as client:
         resp = await client.trace("/others")
         assert resp.text == "others"
+

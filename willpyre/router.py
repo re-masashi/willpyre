@@ -1,7 +1,7 @@
 import typing
 from . import structure
 from . import kua
-
+import copy
 
 class StaticRouter:
     '''
@@ -30,7 +30,7 @@ class StaticRouter:
             path += '/'
         self.routes[method][path] = handler
 
-    def add_method(self, method: str):
+    def add_method(self, method: str): # pragma: no cover
         '''
         This should be used to adding HTTP methods to the routing dictionary
 
@@ -221,7 +221,7 @@ class Router(StaticRouter):
         if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
             self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
 
-        self.KuaRoutes._routes[endpoint] = router.KuaRoutes._routes
+        self.KuaRoutes._routes[endpoint] = copy.deepcopy(router.KuaRoutes._routes)
         if router.KuaRoutes._routes.get('', "NOT_FOUND") != "NOT_FOUND":
             self.KuaRoutes._routes[endpoint][":route"] = router.KuaRoutes._routes[''][':route']
             self.KuaRoutes._routes[endpoint].pop('')
@@ -253,7 +253,7 @@ class Router(StaticRouter):
         finally:
             return response_
 
-    async def handleWS(self, scope, send, recieve) -> None:
+    async def handleWS(self, scope, send, recieve) -> None: # pragma: no cover
         path = scope["path"]
         if path[-1] != '/':
             path += '/'
