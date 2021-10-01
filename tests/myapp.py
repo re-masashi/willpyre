@@ -1,4 +1,9 @@
-from willpyre import App, Router, JSONResponse, Cookie, TextResponse
+from willpyre import (
+    App,
+    Router,
+    JSONResponse,
+    Cookie,
+    TextResponse)
 
 
 router = Router()
@@ -44,13 +49,13 @@ async def json_(req, res):
     return JSONResponse({'a': 'b'})
 
 
-async def other_methods(req,res):
+async def other_methods(req, res):
     return TextResponse("others")
 
 
-router.add_route('/others',"FETCH", other_methods)
-router.add_route('/others',"TRACE", other_methods)
-router.add_route('/others',"PATCH", other_methods)
-
+router.add_route('/others', "FETCH", other_methods)
+router.add_route('/others', "TRACE", other_methods)
+router.add_route('/others', "PATCH", other_methods)
+router.add_route('/others', "PUT", other_methods)
 
 main = App(router)

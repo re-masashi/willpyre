@@ -16,7 +16,7 @@ Willpyre gives flexibility and control, but abstracts ASGI to some extent and ad
 It is quite simple to use Willpyre.
 
 ```py
-from willpyre import App,Router
+from willpyre import App, Router
 
 
 router = Router()
@@ -30,8 +30,6 @@ async def index(req,res):
 app = App(router)
 ```
 
-Just that will do.
-
 It should run with any ASGI server like ``Uvicorn``, ``Daphne``, ``Hypercorn``.
 
 To run with Uvicorn, install Uvicorn using 
@@ -44,13 +42,22 @@ uvicorn <file>:app
 ```
 
 The framework is written in pure-python and can run in PyPy or CPython.
+Tested on version 3.6 and above.
 
-----
+---------------------------------
+## [Features](#Features)
 
-### Why Willpyre?
+* Predefined response objects for fast development.
+* Optional base response object passed to handlers.
+* Async.
+* Light and tiny.
+* And lots more..
 
-Willpyre wants to be precise in action that can be performed on a URL, allowing only one method while registering a URL.
-However, it won't enforce it. You can create your own Router by etending the Router class and implementing other approaches.
-Willpyre's API wants to keep the entire context in `request` and `response`.
+--------------
+## Contributions
 
-------
+It is open to contributors willing to commit.
+Please open issues if you find something wierd.
+Fork this if you want to propose changes.
+
+------------

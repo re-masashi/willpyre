@@ -18,7 +18,10 @@ setup(
     author="Nafi Amaan Hossain",
     license="BSD license (3-Clause)",
     classifiers=[
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     packages=["willpyre"],
     include_package_data=True,

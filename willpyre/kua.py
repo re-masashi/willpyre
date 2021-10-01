@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+#
+# This file is a slightly modified version of @nitely's Kua.
+# https://github.com/nitely/Kua
+#
 
 import collections
 import functools
@@ -58,7 +62,7 @@ def _unwrap(variable_parts: VariablePartsType):
     while curr_parts:
         curr_parts, (var_type, part) = curr_parts
 
-        if var_type == Routes._VAR_ANY_NODE:#pragma: no cover
+        if var_type == Routes._VAR_ANY_NODE:  # pragma: no cover
             var_any.append(part)
             continue
 

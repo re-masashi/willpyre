@@ -1,4 +1,5 @@
 from . import router, structure
+import logging
 
 
 class App:
@@ -25,7 +26,10 @@ class App:
         self.config = {
             "startup": startup,
             "shutdown": shutdown,
+            "logger": logging.debug,
             "router_config": {
+                "logger_exception": logging.error,
+                "logger_info": logging.info,
                 "404Response": structure.Response404(),
                 "405Response": structure.Response405(),
                 "500Response": structure.Response500()
@@ -70,7 +74,8 @@ class App:
                 response_cookies = [
                     [
                         b'Set-Cookie',
-                        cookie_.encode() + b'=' + response_.cookies[cookie_].cookie_str
+                        cookie_.encode() + b'=' +
+                        response_.cookies[cookie_].cookie_str
                     ]
                     for cookie_ in response_.cookies.keys()]
             else:
@@ -101,6 +106,7 @@ class App:
                     return
 # End lifespan
 # WebSocket
-        elif scope["type"] == "websockets": # pragma: no cover
-            await self.router.handleWS(scope=scope, send=send, recieve=receive)
+
+# Not implemented yet.
+
 # End WebSocket

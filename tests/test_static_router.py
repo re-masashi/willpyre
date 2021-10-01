@@ -62,11 +62,3 @@ async def test_patch():
     async with TestClient(main) as client:
         resp = await client.patch("/others")
         assert resp.text == "others"
-
-@pytest.mark.asyncio
-async def test_put():
-
-    async with TestClient(main) as client:
-        resp = await client.trace("/others")
-        assert resp.text == "others"
-

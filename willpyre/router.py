@@ -1,7 +1,8 @@
 import typing
-from . import structure
-from . import kua
 import copy
+import traceback
+from . import structure, kua
+
 
 class StaticRouter:
     '''
@@ -30,7 +31,7 @@ class StaticRouter:
             path += '/'
         self.routes[method][path] = handler
 
-    def add_method(self, method: str): # pragma: no cover
+    def add_method(self, method: str):  # pragma: no cover
         '''
         This should be used to adding HTTP methods to the routing dictionary
 
@@ -208,10 +209,7 @@ class Router(StaticRouter):
         self.routes[method][variablized_url] = handler
 
     def add_ws_route(self, path: str, method: str, handler: typing.Callable) -> None:
-        if path[-1] != '/':
-            path += '/'
-        variablized_url = self.WSKuaRoutes.add(path)
-        self.ws_routes[variablized_url] = handler
+        raise NotImplementedError("You need to implement websockets.")
 
     def embed_router(self, endpoint: str, router) -> None:
         if endpoint[0] == '/':
@@ -221,7 +219,8 @@ class Router(StaticRouter):
         if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
             self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
 
-        self.KuaRoutes._routes[endpoint] = copy.deepcopy(router.KuaRoutes._routes)
+        self.KuaRoutes._routes[endpoint] = copy.deepcopy(
+            router.KuaRoutes._routes)
         if router.KuaRoutes._routes.get('', "NOT_FOUND") != "NOT_FOUND":
             self.KuaRoutes._routes[endpoint][":route"] = router.KuaRoutes._routes[''][':route']
             self.KuaRoutes._routes[endpoint].pop('')
@@ -244,22 +243,30 @@ class Router(StaticRouter):
                 response_ = await self.routes["GET"][variablized_url](request, response)
             else:
                 response_ = await self.routes[request.method][variablized_url](request, response)
+            return response_
         except kua.RouteError:
+            # kua.RouteErrors occur when the requested route is not registered.
             response_ = self.config.get("404Response", structure.Response404())
+            return response_
         except KeyError:
+            # Key errors occur on when no method is found on a route.
             response_ = self.config.get("405Response", structure.Response405())
-        except:
+            return response_
+        except Exception:
+            # Catches other errors.
+            self.config.get("logger_exception", print)(traceback.format_exc())
             response_ = self.config.get("500Response", structure.Response500())
-        finally:
             return response_
 
-    async def handleWS(self, scope, send, recieve) -> None: # pragma: no cover
-        path = scope["path"]
-        if path[-1] != '/':
-            path += '/'
-        try:
-            params, variablized_url = self.KuaRoutes.match(
-                scope["path"])
-            await self.ws_routes[variablized_url](scope, send, recieve)
-        except (kua.RouteError, KeyError):
-            await self.send({"type": "websocket.close", "code": 1006})
+    async def handleWS(self, scope, send, recieve) -> None:  # pragma: no cover
+        # path = scope["path"]
+        # if path[-1] != '/':
+        #     path += '/'
+        # try:
+        #     params, variablized_url = self.KuaRoutes.match(
+        #         scope["path"])
+        #     await self.ws_routes[variablized_url](scope, send, recieve)
+        # except (kua.RouteError, KeyError):
+        #    await self.send({"type": "websocket.close", "code": 1006})
+        raise NotImplementedError(
+            "You need to implement websockets, to use it.")
