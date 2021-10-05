@@ -72,7 +72,7 @@ Thus, the above example would become..
 
 After running this with Uvicorn, you will see that if you go to http://localhost:8000/anotherpath/ The response will be the same as in http://localhost:8000
 
-Embed a router(Experimental)
+Embed a router
 ----------------------------
 
 .. code-block :: python
@@ -103,9 +103,9 @@ Now, you can request to http://localhost:8000/sub/, and you will see the text
 ``"Subrouter index"``. If you go to http://localhost:8000/sub/hello, you will see "Foo".
 And the other links will work as it is.
 
-.. note :: 
+.. note :: Tip
 
-	Do not make changes to the router after embedding it.
+	Do not make changes to the router after embedding it. It keeps the outcome predictable.
 
 The router has an internal representation of routes.
 This representation is embedded in the router which wraps another router.
