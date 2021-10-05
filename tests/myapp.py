@@ -27,6 +27,7 @@ async def login(request, response):
 @router.post('/login/')
 async def post_login(request, response):
     response.body = request.body.get("a", "No_data")
+    print(response.body)
     return response
 
 

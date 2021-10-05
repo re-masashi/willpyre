@@ -1,15 +1,154 @@
 from urllib import parse
-import email.parser
+import email
+from collections import defaultdict
 
+def parse_multipart(content_type: str, data: bytes, decode:bool=False):
+        post_data = f"""Content-Type: {content_type}
+        MIME-Version: 1.0
 
-def parse_multipart(data, decode=False):
-    msg = email.parser.BytesParser().parsebytes(data)
+        {data.decode()}"""
+        msg = email.message_from_string(post_data)
+        files = TypedMultiMap({})
+        body = TypedMultiMap({})
+        if msg.is_multipart():
+            for part in msg.get_payload():
+                name = part.get_param('name', header='content-disposition', decode=decode)
+                filename = part.get_param('filename', header='content-disposition', decode=decode)
+                payload = part.get_payload(decode=True)
+                if filename is not None:
+                    files[name] = FileObject(
+                        payload, 
+                        **part.get_params(header='content-disposition',decode=decode)
+                        )
+                else:
+                    body[name] = payload
+        return body, files
 
-    return {
-        part.get_param('name', header='content-disposition'): part.get_payload(decode=decode)
-        for part in msg.get_payload()
-    }
+class TypedMultiMap(dict):
 
+    def __init__(self, mapping=None):
+        if isinstance(mapping, TypedMultiMap):
+            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists()))
+        elif isinstance(mapping, dict):
+            temp = dict()
+            for key, value in mapping.items():
+                if isinstance(value, (tuple, list)):
+                    if len(value) == 0:
+                        continue
+                    value = list(value)
+                else:
+                    value = [value]
+                temp[key] = value
+            dict.__init__(self, temp)
+        else:
+            temp = {}
+            for key, value in mapping or ():
+                temp.setdefault(key, []).append(value)
+            dict.__init__(self, temp)
+
+    def __iter__(self):
+        return dict.__iter__(self)
+
+    def __getitem__(self, key):
+        """
+        Returns only the first item and None, if key does not exist.
+        """
+
+        if key in self:
+            lst = dict.__getitem__(self, key)
+            if len(lst) > 0:
+                return lst[0]
+            else:
+                return lst
+        return None
+
+    def __setitem__(self, key, value):
+        """
+        Used for assigning the value to an index.
+        .. code-block :: python
+
+            a = TypedMultiMap()
+            a["key"] = "value"
+
+        """
+        dict.__setitem__(self, key, [value])
+
+    def add(self, key, value):
+        """
+        Inserts a key for the value given.
+        """
+        dict.setdefault(self, key, []).append(value)
+
+    def to_dict(self, flat=True):
+        """
+        Return the contents as regular dict. 
+
+        Args:
+            Flat: If set to ``True``, only first item is present. Else, a list is present.\
+            Defaults to ``False``
+        """
+
+        if flat:
+            return dict(self.items())
+        return dict(self.lists())
+
+    def get_all(self, key, type_=None):
+        """
+        Fetches the list of all the items present.
+        """
+        try:
+            rv = dict.__getitem__(self, key)
+        except KeyError:
+            return []
+        if type is None:
+            return list(rv)
+        result = []
+        for item in rv:
+            try:
+                result.append(type_(item))
+            except ValueError:
+                pass
+        return result
+
+    def get(self, key, default=None, type_=None):
+        if key in self:
+            lst = dict.__getitem__(self, key)
+            if len(lst) > 0:
+                rv = lst[0]
+            else:
+                rv = lst
+            if type_ is not None:
+                try: 
+                    rv = type_(rv)
+                except ValueError:
+                    return rv
+            return rv
+        return default
+
+    def items(self, multi=False):
+        '''
+        Args:
+            multi: When set to ``True``, you get a list. Else, a value.
+        '''
+        for key, values in dict.items(self):
+            if multi:
+                for value in values:
+                    yield key, value
+            else:
+                yield key, values[0]
+
+    def update(self, mapping):
+        if isinstance(mapping, TypedMultiMap):
+            yield from mapping.items(multi=True)
+        elif isinstance(mapping, dict):
+            for key, value in mapping.items():
+                if isinstance(value, (tuple, list)):
+                    for v in value:
+                        yield key, v
+                else:
+                    yield key, value
+        else:
+            yield from mapping
 
 class Response:
     '''
@@ -62,11 +201,7 @@ class Request:
 
 
     '''
-    params = dict()
-    headers = dict()
-    cookies = dict()
-    query = dict()
-    body = dict()
+    params, headers, cookies = {},{},{}
 
     def __init__(self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args):
         '''
@@ -84,16 +219,23 @@ class Request:
         self.path = path
         self.raw_query = raw_query
         self.raw_body = raw_body
-        self.query = parse.parse_qs(raw_query.decode())
-        self.query.update((k, self.query[k][0]) for k in self.query)
-        if self.headers.get("content-type", "NO_CONTENT_TYPE") == "multipart/form-data":
-            self.body = parse_multipart(raw_body)
-        else:
-            self.body = parse.parse_qs(raw_body.decode())
-            self.body.update((k, self.body[k][0]) for k in self.body)
+        self.query = TypedMultiMap(
+            parse.parse_qs(raw_query.decode())
+            )
 
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
+
+        if self.headers.get("content-type", "NO_CONTENT_TYPE") == "multipart/form-data":
+            self.body, self.files = parse_multipart(
+                self.headers["content_type"],
+                raw_body
+                )
+        else:
+            self.body = TypedMultiMap(
+                parse.parse_qs(raw_body.decode())
+                )
+            self.files = None
 
         if 'cookie' in self.headers.keys():
             [self.cookies.update({_.split('=')[0]:_.split('=')[1]})
@@ -122,7 +264,6 @@ class Response500(Response):
         self.headers['content_type'] = 'text/html'
         self.body = "Internal Server Error"
         self.status = 500
-
 
 class Cookie:
     '''
@@ -176,3 +317,12 @@ class Cookie:
             self.cookie_str += b'; Secure'
         if http_only is True:
             self.cookie_str += b'; HttpOnly'
+
+class FileObject:
+    __slots__ = ("payload", "name", "filename")
+    def __init__(self, payload, name, filename, **kwargs):
+        self.payload = payload
+        self.name = name
+        self.filename = filename
+        del kwargs
+
