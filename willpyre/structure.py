@@ -2,27 +2,31 @@ from urllib import parse
 import email
 from collections import defaultdict
 
-def parse_multipart(content_type: str, data: bytes, decode:bool=False):
-        post_data = f"""Content-Type: {content_type}
+
+def parse_multipart(content_type: str, data: bytes, decode: bool = False):
+    post_data = f"""Content-Type: {content_type}
         MIME-Version: 1.0
 
         {data.decode()}"""
-        msg = email.message_from_string(post_data)
-        files = TypedMultiMap({})
-        body = TypedMultiMap({})
-        if msg.is_multipart():
-            for part in msg.get_payload():
-                name = part.get_param('name', header='content-disposition', decode=decode)
-                filename = part.get_param('filename', header='content-disposition', decode=decode)
-                payload = part.get_payload(decode=True)
-                if filename is not None:
-                    files[name] = FileObject(
-                        payload, 
-                        **part.get_params(header='content-disposition',decode=decode)
-                        )
-                else:
-                    body[name] = payload
-        return body, files
+    msg = email.message_from_string(post_data)
+    files = TypedMultiMap({})
+    body = TypedMultiMap({})
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            name = part.get_param(
+                'name', header='content-disposition', decode=decode)
+            filename = part.get_param(
+                'filename', header='content-disposition', decode=decode)
+            payload = part.get_payload(decode=True)
+            if filename is not None:
+                files[name] = FileObject(
+                    payload,
+                    **part.get_params(header='content-disposition', decode=decode)
+                )
+            else:
+                body[name] = payload
+    return body, files
+
 
 class TypedMultiMap(dict):
 
@@ -118,7 +122,7 @@ class TypedMultiMap(dict):
             else:
                 rv = lst
             if type_ is not None:
-                try: 
+                try:
                     rv = type_(rv)
                 except ValueError:
                     return rv
@@ -149,6 +153,7 @@ class TypedMultiMap(dict):
                     yield key, value
         else:
             yield from mapping
+
 
 class Response:
     '''
@@ -201,7 +206,7 @@ class Request:
 
 
     '''
-    params, headers, cookies = {},{},{}
+    params, headers, cookies = {}, {}, {}
 
     def __init__(self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args):
         '''
@@ -221,7 +226,7 @@ class Request:
         self.raw_body = raw_body
         self.query = TypedMultiMap(
             parse.parse_qs(raw_query.decode())
-            )
+        )
 
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
@@ -230,11 +235,11 @@ class Request:
             self.body, self.files = parse_multipart(
                 self.headers["content_type"],
                 raw_body
-                )
+            )
         else:
             self.body = TypedMultiMap(
                 parse.parse_qs(raw_body.decode())
-                )
+            )
             self.files = None
 
         if 'cookie' in self.headers.keys():
@@ -264,6 +269,7 @@ class Response500(Response):
         self.headers['content_type'] = 'text/html'
         self.body = "Internal Server Error"
         self.status = 500
+
 
 class Cookie:
     '''
@@ -318,11 +324,12 @@ class Cookie:
         if http_only is True:
             self.cookie_str += b'; HttpOnly'
 
+
 class FileObject:
     __slots__ = ("payload", "name", "filename")
+
     def __init__(self, payload, name, filename, **kwargs):
         self.payload = payload
         self.name = name
         self.filename = filename
         del kwargs
-
