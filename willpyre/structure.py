@@ -1,6 +1,5 @@
 from urllib import parse
 import email
-from collections import defaultdict
 
 
 def parse_multipart(content_type: str, data: bytes, decode: bool = False):
@@ -141,19 +140,6 @@ class TypedMultiMap(dict):
             else:
                 yield key, values[0]
 
-    def update(self, mapping):
-        if isinstance(mapping, TypedMultiMap):
-            yield from mapping.items(multi=True)
-        elif isinstance(mapping, dict):
-            for key, value in mapping.items():
-                if isinstance(value, (tuple, list)):
-                    for v in value:
-                        yield key, v
-                else:
-                    yield key, value
-        else:
-            yield from mapping
-
 
 class Response:
     '''
@@ -206,7 +192,7 @@ class Request:
 
 
     '''
-    params, headers, cookies = {}, {}, {}
+    params, cookies = {}, {}
 
     def __init__(self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args):
         '''
@@ -220,6 +206,7 @@ class Request:
           body(str): The HTTP request body.
 
         '''
+        self.headers = TypedMultiMap({})
         self.method = method
         self.path = path
         self.raw_query = raw_query
@@ -227,7 +214,6 @@ class Request:
         self.query = TypedMultiMap(
             parse.parse_qs(raw_query.decode())
         )
-
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
 

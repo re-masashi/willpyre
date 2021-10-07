@@ -73,7 +73,7 @@ Thus, the above example would become..
 After running this with Uvicorn, you will see that if you go to http://localhost:8000/anotherpath/ The response will be the same as in http://localhost:8000
 
 Embed a router
-----------------------------
+--------------
 
 .. code-block :: python
 
@@ -103,9 +103,9 @@ Now, you can request to http://localhost:8000/sub/, and you will see the text
 ``"Subrouter index"``. If you go to http://localhost:8000/sub/hello, you will see "Foo".
 And the other links will work as it is.
 
-.. note :: Tip
+.. note :: 
 
-	Do not make changes to the router after embedding it. It keeps the outcome predictable.
+	Do not make changes to the router after embedding it.
 
 The router has an internal representation of routes.
 This representation is embedded in the router which wraps another router.
@@ -139,6 +139,28 @@ You will see that, you will find the text "**You requested the variable hello**"
 
 ``request.params`` is a dictionary object. And as you specified the variable name as ``:var`` you can access its value ``var`` as a key in the ``request.params`` dictionary.
 
+You can also have varying number parameters in the url, just like the ``*args`` in functions.
+
+Eg:
+
+.. code-block :: python
+	
+	@router.get('/files/*filepath')
+	async def file_hosting(request, response):
+		filepath = request.params.get('filepath')
+		path = '/'
+		for part in path:
+			path.join(path+'/')
+		response.body = f'You requested a file at {path}'
+		return response
+
+Add this in your routes, and run your file with uvicorn 
+and if you head to http://localhost:8000/files/home/user/, 
+you will see that the message will be "You requested a file at /home/user/". 
+If you request http://localhost:8000/files/somepath/some/other/,
+you will see that the message will be "You requested a path at /somepath/some/other"
+
+
 Request object
 ==============
 
@@ -149,9 +171,11 @@ The ``request`` object is useful for getting info about the incoming request. Su
 If a client sends a request to ``/hello?name=Sasuke``
 You can access it via ``request.query.get("name")``, and you will get the value ``Sasuke``.
 
-.. note ::
-	As the data is in dictionary format, please use query.get(value) instead of query[value].
-	If the value is missing, and you use the quesry[value] notation, you will raise a KeyError. For other dictionary objects as well, try to use the .get() function, a fallback value with the .get() is even better. 
+.. admonition:: A Good Practice
+	:class: note
+
+	As the ``query`` is a TypedMultiDict object, please use ``query.get(value)`` instead of query[value].
+	If the value is missing, and you use the ``query[value]`` notation, you will get a value of ``None``. For other dict-like objects as well, try to use the ``query.get(value, fallback)`` function, with a fallback value. 
 
 ``request.body``
 ----------------
@@ -170,10 +194,22 @@ If he fills in his ID to be, "user", you will get "user" in "``request.body.get(
 
 The same goes for multipart file uploads.
 
+``request.files``
+-----------------
+This is a dict-like collection of the files uploaded. 
+The files uploaded are present as ``FileObject``s. These ``FileObject``s have ``filename``,
+``name`` and ``payload`` which store the filename, name of the POST parameter, (i.e.
+the name in the HTML form.) and the content of the file.
+
+.. admonition:: Do not trust uploaded file names
+	:class: warning
+	
+	Attackers may post malicious filenames. Such as "../../../../etc/passwd", or "../../../../etc/shadows/" and can have control on the server file system. Hence, it is better to not trust user uploaded file names and always saniize the names.
 
 ``request.cookies``
 -------------------
-These contain the cookies of the client that have been sent, i.e, request cookies. You can access the cookies via ``request.cookies.get(cookienamehere)``.
+These contain the cookies of the client that have been sent, i.e, request cookies. You can access the cookies by ``request.cookies.get(cookienamehere)`` or, 
+``request.cookies["cookienamehere"]``.
 
 ``request.headers``
 -------------------
@@ -200,8 +236,6 @@ Eg:
 The content-type of the response can be set with ``response.headers["content-type"]``
 
 
-
-
 ``response.cookies``
 --------------------
 These are the cookies sent to the client. Must be of type ``structure.Cookie``
@@ -213,5 +247,3 @@ These are the cookies sent to the client. Must be of type ``structure.Cookie``
 The status code of the response. Must be an int.
 
 
-
- 

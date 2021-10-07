@@ -5,8 +5,18 @@ Willpyre provides abstraction over ASGI.
 It supports HTTP without external dependencies.
 Websockets support is yet to come.
 
-The tutorial provides you with information about developing applications.
-The docs covers most of the basic parts of the code. It gives some basic examples as well.
+.. admonition :: Micro-framework
+
+   Willpyre is micro, but it does not mean it is not capable of doing.
+   It means, it lets you choose anything and runs with anything.
+
+The tutorial provides you with information about the components.
+It gives some basic examples as well.
+The documentation covers most of the basic parts of the code. 
+Extending the components, ``startup`` and ``shutdown`` tasks, custom error responses, etc.
+are present in the "advanced" section.
+
+
 
 
 --------
