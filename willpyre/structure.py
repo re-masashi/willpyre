@@ -84,7 +84,7 @@ class TypedMultiMap(dict):
 
     def to_dict(self, flat=True):
         """
-        Return the contents as regular dict. 
+        Return the contents as regular dict.
 
         Args:
             Flat: If set to ``True``, only first item is present. Else, a list is present.\
@@ -167,7 +167,7 @@ class Response:
             status=200,
             content_type="text/html",
             body='',
-            headers=dict(),
+            headers=TypedMultiMap({}),
             cookies=dict()):
         self.headers = headers
         self.cookies = cookies
@@ -237,7 +237,7 @@ class Response404(Response):
     def __init__(self):
         super().__init__()
         self.headers['content-type'] = 'text/html'
-        self.body = 'Not found!!'
+        self.body = 'Not found'
         self.status = 404
 
 
@@ -319,3 +319,17 @@ class FileObject:
         self.name = name
         self.filename = filename
         del kwargs
+
+
+class HTTPException(Exception, Response):
+    def __init__(
+            self,
+            status: int = 404,
+            body: str = "Not found",
+            content_type="text/html"
+    ):
+        # Do not use super() here. Makes a mess of multiple inheritances.
+        Response.__init__(self)
+        self.status = 404
+        self.content_type = content_type
+        self.body = body

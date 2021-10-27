@@ -25,7 +25,7 @@ Contents
 
 .. toctree ::
    installation
-   tutorial
+   quick_start
    advanced
    documentation/index
 

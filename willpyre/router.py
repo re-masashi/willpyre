@@ -1,7 +1,14 @@
-import typing
-import copy
+from typing import Callable
+from copy import deepcopy
 import traceback
-from . import structure, kua
+from .kua import Routes
+from .structure import (
+    HTTPException,
+    Response,
+    Response405,
+    Response500,
+    Response404
+)
 
 
 class StaticRouter:
@@ -26,7 +33,7 @@ class StaticRouter:
         self.ws_routes = dict()
         self.config = dict()
 
-    def add_route(self, path: str, method: str, handler: typing.Callable) -> None:
+    def add_route(self, path: str, method: str, handler: Callable) -> None:
         if path[-1] != '/':
             path += '/'
         self.routes[method][path] = handler
@@ -47,7 +54,7 @@ class StaticRouter:
         # self.routes[method] = {}
         raise NotImplementedError
 
-    def get(self, path: str, **opts) -> typing.Callable:
+    def get(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a get query to the path.
 
@@ -66,12 +73,12 @@ class StaticRouter:
 
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="GET", handler=handler)
             return handler
         return decorator
 
-    def post(self, path: str, **opts) -> typing.Callable:
+    def post(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a post request to the path.
 
@@ -80,12 +87,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="POST", handler=handler)
             return handler
         return decorator
 
-    def put(self, path: str, **opts) -> typing.Callable:
+    def put(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a put request to the path.
 
@@ -94,12 +101,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="PUT", handler=handler)
             return handler
         return decorator
 
-    def fetch(self, path: str, **opts) -> typing.Callable:
+    def fetch(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a fetch request to the path.
 
@@ -108,12 +115,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="FETCH", handler=handler)
             return handler
         return decorator
 
-    def patch(self, path: str, **opts) -> typing.Callable:
+    def patch(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a PATCH request to the path.
 
@@ -122,12 +129,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="PATCH", handler=handler)
             return handler
         return decorator
 
-    def connect(self, path: str, **opts) -> typing.Callable:
+    def connect(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a connect request to the path.
 
@@ -136,12 +143,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="CONNECT", handler=handler)
             return handler
         return decorator
 
-    def options(self, path: str, **opts) -> typing.Callable:
+    def options(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on an options request to the path.
 
@@ -150,12 +157,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="OPTIONS", handler=handler)
             return handler
         return decorator
 
-    def trace(self, path: str, **opts) -> typing.Callable:
+    def trace(self, path: str, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a trace request to the path.
 
@@ -164,12 +171,12 @@ class StaticRouter:
           path(str): The Request path
 
         """
-        def decorator(handler: typing.Callable) -> typing.Callable:
+        def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="TRACE", handler=handler)
             return handler
         return decorator
 
-    async def handle(self, request, response):
+    async def handle(self, request, response) -> Response:
         '''
         The handle function wil handle the requests and send appropriate responses,
         based on the functions defined.
@@ -190,25 +197,33 @@ class StaticRouter:
                 response_ = await self.routes[request.method][request.path](request, response)
             return response_
         except KeyError:
-            resp = structure.Response404()
+            resp = Response404()
             return resp
         # Value: Response object(9/8/21).
 
 
 class Router(StaticRouter):
 
-    def __init__(self):
-        self.KuaRoutes = kua.Routes()
-        self.WSKuaRoutes = kua.Routes()
+    def __init__(self) -> None:
+        self.validation_dict = {
+            'int': lambda var: var.isdigit(),
+            'lcase': lambda var: var.islower(),
+            'ucase': lambda var: var.isupper(),
+            'alnum': lambda var: var.isalnum(),
+            # Everything is an str
+            'str': True
+        }
+        self.KuaRoutes = Routes(self.validation_dict)
+        self.WSKuaRoutes = Routes(self.validation_dict)
         super().__init__()
 
-    def add_route(self, path: str, method: str, handler: typing.Callable) -> None:
+    def add_route(self, path: str, method: str, handler: Callable) -> None:
         if path[-1] != '/':
             path += '/'
         variablized_url = self.KuaRoutes.add(path)
         self.routes[method][variablized_url] = handler
 
-    def add_ws_route(self, path: str, method: str, handler: typing.Callable) -> None:
+    def add_ws_route(self, path: str, method: str, handler: Callable) -> None:
         raise NotImplementedError("You need to implement websockets.")
 
     def embed_router(self, endpoint: str, router) -> None:
@@ -219,7 +234,7 @@ class Router(StaticRouter):
         if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
             self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
 
-        self.KuaRoutes._routes[endpoint] = copy.deepcopy(
+        self.KuaRoutes._routes[endpoint] = deepcopy(
             router.KuaRoutes._routes)
         if router.KuaRoutes._routes.get('', "NOT_FOUND") != "NOT_FOUND":
             self.KuaRoutes._routes[endpoint][":route"] = router.KuaRoutes._routes[''][':route']
@@ -233,7 +248,7 @@ class Router(StaticRouter):
             for method in router.routes.keys()
         ]
 
-    async def handle(self, request, response):
+    async def handle(self, request, response) -> None:
         if request.path[-1] != '/':
             request.path += '/'
         try:
@@ -244,21 +259,20 @@ class Router(StaticRouter):
             else:
                 response_ = await self.routes[request.method][variablized_url](request, response)
             return response_
-        except kua.RouteError:
-            # kua.RouteErrors occur when the requested route is not registered.
-            response_ = self.config.get("404Response", structure.Response404())
-            return response_
+        except HTTPException as e:
+            # HTTPException occurs when the requested route is not registered.
+            return e
         except KeyError:
             # Key errors occur on when no method is found on a route.
-            response_ = self.config.get("405Response", structure.Response405())
+            response_ = self.config.get("405Response", Response405())
             return response_
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())
-            response_ = self.config.get("500Response", structure.Response500())
+            response_ = self.config.get("500Response", Response500())
             return response_
 
-    async def handleWS(self, scope, send, recieve) -> None:  # pragma: no cover
+    async def handleWS(self, scope: dict, send, recieve) -> None:  # pragma: no cover
         # path = scope["path"]
         # if path[-1] != '/':
         #     path += '/'
@@ -266,7 +280,8 @@ class Router(StaticRouter):
         #     params, variablized_url = self.KuaRoutes.match(
         #         scope["path"])
         #     await self.ws_routes[variablized_url](scope, send, recieve)
-        # except (kua.RouteError, KeyError):
+        # except (HTTPError, KeyError):
         #    await self.send({"type": "websocket.close", "code": 1006})
         raise NotImplementedError(
-            "You need to implement websockets, to use it.")
+            "You need to implement websockets, to use it."
+        )

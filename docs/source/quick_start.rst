@@ -1,4 +1,4 @@
-Tutorial
+Quick Start
 ===========
 
 The functions that handle the actions on a page, are called handlers. The handlers must have ``request`` and ``response`` parameters. 
@@ -135,11 +135,41 @@ Eg:
 
 Run this with Uvicorn and then, go to http://localhost:8000/api/hello
 
-You will see that, you will find the text "**You requested the variable hello**".  
+You will see that, you will find the text "**You requested the variable hello**".
 
 ``request.params`` is a dictionary object. And as you specified the variable name as ``:var`` you can access its value ``var`` as a key in the ``request.params`` dictionary.
 
+Now, say you want to have something like, ``https://example.com/api/:userid`` (where 
+``userid`` is an integer), and returns user by id. Fine, you can do that.
+But, if you want to add a route like, say, ``https://example.com/api/:username`` 
+which returns a user by username(it is a lowercase value.) What will you do?
+
+Here comes a solution:
+
+Validation
+----------
+Wilpyre supports validation of request parameters.
+
+You can add the routes like:
+.. code-block :: python
+
+	@router.get("/api/:userid|int")
+	# Do something
+	@router.add("/api/:username|lcase")
+	# Do something
+
+THe default validation is ``'str'`` which matches everything and 
+is implicitly passed when nothing is specified.
+
+The default validators are:
+
+``int``, ``lcase``, ``ucase``, ``str``, ``alnum``
+
+Multiple Vars
+-------------
+
 You can also have varying number parameters in the url, just like the ``*args`` in functions.
+However, type validation cannot be done here. It just matches everything.
 
 Eg:
 

@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
-#
-# This file is a slightly modified version of @nitely's Kua.
-# https://github.com/nitely/Kua
-#
 
+import re
+import urllib.parse
 import collections
-import functools
+from functools import lru_cache
 from typing import (
     Tuple,
     List,
     Sequence,
     Dict,
-    Union)
+    Union,
+    Callable,
+    Iterator)
+from .structure import HTTPException
 
+__all__ = [
+    'Routes',
+    'RouteResolved']
 
 # This is a nested structure similar to a linked-list
-VariablePartsType = Tuple[tuple, Tuple[str, str]]
-
-
-class RouteError(Exception):
-    """Base error for any exception raised by Kua"""
+WrappedVariablePartsType = Tuple[tuple, Tuple[str, str]]
+VariablePartsType = Tuple[Union[str, Tuple[str]]]
+VariablePartsIterType = Iterator[Union[str, Tuple[str]]]
+ValidateType = Dict[str, Callable[[str], bool]]
 
 
 def depth_of(parts: Sequence[str]) -> int:
@@ -52,7 +55,17 @@ def normalize_url(url: str) -> str:
     return url
 
 
-def _unwrap(variable_parts: VariablePartsType):
+def decode_parts(parts):
+    try:
+        return tuple(
+            urllib.parse.unquote(
+                part, encoding='utf-8', errors='strict')
+            for part in parts)
+    except UnicodeDecodeError:
+        raise HTTPException(400, "Bad Request")
+
+
+def _unwrap(variable_parts: WrappedVariablePartsType) -> VariablePartsIterType:
     """
     Yield URL parts. The given parts are usually in reverse order.
     """
@@ -62,7 +75,7 @@ def _unwrap(variable_parts: VariablePartsType):
     while curr_parts:
         curr_parts, (var_type, part) = curr_parts
 
-        if var_type == Routes._VAR_ANY_NODE:  # pragma: no cover
+        if var_type == Routes._VAR_ANY_NODE:
             var_any.append(part)
             continue
 
@@ -86,69 +99,157 @@ def _unwrap(variable_parts: VariablePartsType):
         yield tuple(reversed(var_any))
 
 
+def unwrap(variable_parts: WrappedVariablePartsType) -> VariablePartsType:
+    return tuple(reversed(tuple(_unwrap(variable_parts))))
+
+
 def make_params(
         key_parts: Sequence[str],
-        variable_parts: VariablePartsType) -> Dict[str, Union[str, Tuple[str]]]:
+        variable_parts: VariablePartsIterType) -> Dict[str, Union[str, Tuple[str]]]:
     """
     Map keys to variables. This map\
     URL-pattern variables to\
     a URL related parts
 
     :param key_parts: A list of URL parts
-    :param variable_parts: A linked-list\
-    (ala nested tuples) of URL parts
+    :param variable_parts: A list of URL parts
     :return: The param dict with the values\
     assigned to the keys
 
     :private:
     """
-    # The unwrapped variable parts are in reverse order.
-    # Instead of reversing those we reverse the key parts
-    # and avoid the O(n) space required for reversing the vars
-    return dict(zip(reversed(key_parts), _unwrap(variable_parts)))
+    return dict(zip(key_parts, variable_parts))
+
+
+_SAFE_COMPONENT = re.compile(r'[ \w\-_.]+')
+
+
+def _is_safe(part: str) -> bool:
+    if isinstance(part, tuple):  # /:*parts/
+        return all(_is_safe(p) for p in part)
+
+    return _SAFE_COMPONENT.fullmatch(part) is not None
+
+
+def validate(
+        key_parts: Sequence[str],
+        variable_parts: VariablePartsIterType,
+        params_validate: dict) -> bool:
+    return all(
+        params_validate.get(param, _is_safe)(value)
+        for param, value in zip(key_parts, variable_parts))
 
 
 _Route = collections.namedtuple(
     '_Route',
-    ['key_parts'])
+    ['key_parts', 'validate'])
+_Route.__doc__ = (
+    """
+    Route pattern state. Every pattern has one of this.
+
+    :param tuple key_parts: Pattern variable names
+    :param object anything: Literally anything. For retrieving later
+    :param dict validate: A map of ``{var: validator}``
+
+    :private:
+    """)
+
+
+def _route(key_parts: Sequence, validate: ValidateType) -> _Route:
+    key_parts = tuple(key_parts)
+    validate = validate or {}
+
+    if not set(validate.keys()).issubset(set(key_parts)):
+        raise RuntimeError(
+            '{missing_vars} not found within the pattern'.format(
+                missing_vars=set(
+                    validate.keys()).difference(set(key_parts)
+                                                )
+            )
+        )
+
+    return _Route(
+        key_parts=key_parts,
+        validate=validate)
+
+
+# DO NOT RELEASE, PORT IT FIRST.
+RouteResolved = collections.namedtuple(
+    'RouteResolved',
+    ['params'])
+RouteResolved.__doc__ = (
+    """
+    Resolved route
+
+    :param dict params: Pattern variables\
+    to URL parts
+    :param object anything: Literally anything.\
+    This is attached to the URL pattern when\
+    registering it
+    """)
+
+
+def _resolve(
+        variable_parts: VariablePartsType,
+        routes: Sequence[_Route]) -> Union[RouteResolved, None]:
+    for route in routes:
+        if validate(
+                route.key_parts,
+                variable_parts,
+                route.validate):
+            return make_params(
+                key_parts=route.key_parts,
+                variable_parts=variable_parts
+            )
+
+    return None
 
 
 class Routes:
     """
     Route URLs to registered URL patterns.
-    URL matcher supports ``:var`` for matching dynamic.
 
-    Path parts are matched in the following order: ``static > var``.
+    Thread safety: every method has a doc note about this
+
+    URL matcher supports ``:var`` for matching dynamic\
+    path parts and ``:*var`` for matching multiple parts.
+
+    Path parts have precedence: ``static > var > *var``.
 
     Usage::
 
-        routes = kua.Routes()
+        routes = willpyre.kua.Routes()
         routes.add('api/:foo')
         route = routes.match('api/hello-world')
         route.params
         # {'foo': 'hello-world'}
 
-        # Error handling
-        try:
-            route = routes.match('bad-url/some')
-        except kua.RouteError:
-            raise ValueError('Not found 404')
-        else:
-            # Do something useful here
-            pass
+        # Matching any path
+        routes.add('assets/:*foo')
+        route = routes.match('assets/user/profile/avatar.jpg')
+        route.params
+        # {'foo': ('user', 'profile', 'avatar.jpg')}
+
+        # Typed vars
+        is_num = lambda part: part.isdigit()
+        routes.add('api/user/:id')
+        route = routes.match('api/user/123')
+        route.params
+        # {'id': '123'}
 
     :ivar max_depth: The maximum URL depth\
-    (number of parts) willing to match. The\
+    (number of parts) willing to match. This only\
+    takes effect when one or more URLs matcher\
+    make use of any-var (i.e: ``:*var``), otherwise the\
     depth of the deepest URL is taken.
     """
 
     _VAR_NODE = ':var'
     _VAR_ANY_NODE = ':*var'
     _ROUTE_NODE = ':route'
+    _VAR_ANY_BREAK = ':*var:break'
 
-    _VAR_ANY_BREAK = ':*break'
-
-    def __init__(self, max_depth: int = 40) -> None:
+    def __init__(self, validation_dict: dict, max_depth: int = 10) -> None:
         """
         :ivar _routes: \
         Contain a graph with the parts of\
@@ -162,12 +263,13 @@ class Routes:
         :private-vars:
         """
         self._max_depth_custom = max_depth
+        self.validation_dict = validation_dict
         # Routes graph format for 'foo/:foobar/bar':
         # {
         #   'foo': {
         #       ':var': {
         #           'bar': {
-        #               ':route': _Route(),
+        #               ':route': [_Route(), ...],
         #               ...
         #           },
         #           ...
@@ -195,11 +297,11 @@ class Routes:
         parts = url.split('/', self._max_depth + 1)
 
         if depth_of(parts) > self._max_depth:
-            raise RouteError('No match')
+            raise HTTPException
 
         return parts
 
-    def _match(self, parts: Sequence[str]):
+    def _match(self, parts: Sequence[str]) -> dict:
         """
         Match URL parts to a registered pattern.
 
@@ -212,8 +314,6 @@ class Routes:
 
         :private:
         """
-        route_match = None  # type: dict
-        route_variable_parts = tuple()  # type: VariablePartsType
         # (route_partial, variable_parts, depth)
         # type: List[Tuple[dict, tuple, int]]
         to_visit = [(self._routes, tuple(), 0)]
@@ -228,12 +328,17 @@ class Routes:
             try:
                 part = parts[depth]
             except IndexError:
-                if self._ROUTE_NODE in curr:
-                    route_match = curr[self._ROUTE_NODE]
-                    route_variable_parts = curr_variable_parts
-                    break
-                else:
+                if self._ROUTE_NODE not in curr:
                     continue
+
+                route_resolved = _resolve(
+                    variable_parts=unwrap(curr_variable_parts),
+                    routes=curr[self._ROUTE_NODE])
+
+                if route_resolved is None:
+                    continue
+
+                return route_resolved
 
             if self._VAR_ANY_NODE in curr:
                 to_visit.append((
@@ -260,18 +365,14 @@ class Routes:
                     curr_variable_parts,
                     depth + 1))
 
-        if not route_match:
-            raise RouteError('No match')
+        raise HTTPException()
 
-        return make_params(
-            key_parts=route_match.key_parts,
-            variable_parts=route_variable_parts
-        )
-
-    @functools.lru_cache(maxsize=512)
-    def match(self, url: str):
+    @lru_cache(maxsize=512)
+    def match(self, url: str) -> dict:
         """
         Match a URL to a registered pattern.
+
+        This method is thread-safe.
 
         :param url: URL
         :return: Matched route
@@ -280,6 +381,10 @@ class Routes:
         original_url = url
         url = normalize_url(url)
         parts = self._deconstruct_url(url)
+
+        if '%' in url:
+            parts = decode_parts(parts)
+
         match = self._match(parts)
         for param in list(match.keys()):
             original_url = original_url.replace(match[param], param)
@@ -287,9 +392,10 @@ class Routes:
             original_url += '/'
         if original_url[0] != '/':
             original_url = '/' + original_url
-        return self._match(parts), original_url
 
-    def add(self, url: str) -> str:
+        return match, original_url
+
+    def add(self, url: str) -> None:
         """
         Register a URL pattern into\
         the routes for later matching.
@@ -297,13 +403,15 @@ class Routes:
         Registration order does not matter.\
         Adding a URL first or last makes no difference.
 
-        :param url: URL
+        :param url: URL to be added.
         """
         url = normalize_url(url)
         parts = url.split('/')
         curr_partial_routes = self._routes
         curr_key_parts = []
         variablized_url = '/'
+        validation = 'str'
+        validate = {}
         for part in parts:
             if part.startswith(':*'):
                 curr_key_parts.append(part[2:])
@@ -312,19 +420,33 @@ class Routes:
                 self._max_depth = self._max_depth_custom
 
             elif part.startswith(':'):
-                curr_key_parts.append(part[1:])
-                variablized_url += part[1:] + '/'
+                _part = part[1:]
+                if '|' in _part:
+                    _part, validation = _part.split('|')
+                    if validation.isinstance(tuple, list):
+                        raise RuntimeError(
+                            "Only one '|' allowed in url."
+                        )
+                    validate[_part] = validation
+                curr_key_parts.append(_part)
+                variablized_url += _part + '/'
                 part = self._VAR_NODE
+            # This case happens while adding '/'
             elif part == '':
                 variablized_url += part
+            # Regular plain routes, i.e, not vars.
             else:
                 variablized_url += part + '/'
 
-            curr_partial_routes = (curr_partial_routes
-                                   .setdefault(part, {}))
+            curr_partial_routes = (
+                curr_partial_routes.setdefault(part, {})
+            )
 
-        curr_partial_routes[self._ROUTE_NODE] = _Route(
-            key_parts=curr_key_parts)
+        (curr_partial_routes
+         .setdefault(self._ROUTE_NODE, [])
+         .append(_route(
+             key_parts=curr_key_parts,
+             validate=validate)))
 
         self._max_depth = max(self._max_depth, depth_of(parts))
         return variablized_url

@@ -8,11 +8,11 @@ Router, App, Cookie = router.Router, app.App, structure.Cookie
 
 class JSONResponse(structure.Response):
     def __init__(
-        self,
-        data,
-        status=200,
+            self,
+            data,
+            status=200,
             content_type="application/json",
-            headers=dict(),
+            headers=structure.TypedMultiMap({}),
             cookies=dict()):
         super().__init__(headers=headers, cookies=cookies,
                          content_type=content_type, status=status)
@@ -21,11 +21,11 @@ class JSONResponse(structure.Response):
 
 class TextResponse(structure.Response):
     def __init__(
-        self,
-        data,
-        status=200,
+            self,
+            data,
+            status=200,
             content_type="text/plain",
-            headers=dict(),
+            headers=structure.TypedMultiMap({}),
             cookies=dict()):
         super().__init__(headers=headers, cookies=cookies,
                          content_type=content_type, status=status)
