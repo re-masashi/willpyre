@@ -385,15 +385,20 @@ class Routes:
         if '%' in url:
             parts = decode_parts(parts)
 
-        match = self._match(parts)
-        for param in list(match.keys()):
-            original_url = original_url.replace(match[param], param)
+        route_match = self._match(parts)
+        for param in list(route_match.keys()):
+            route_param = route_match[param]
+            if isinstance(route_param,str):
+                original_url = original_url.replace(route_param, param, 1)
+            else: # param is a list
+                original_url = original_url.split(route_param[0])[0] + param
+
         if original_url[-1] != '/':
             original_url += '/'
         if original_url[0] != '/':
             original_url = '/' + original_url
 
-        return match, original_url
+        return route_match, original_url
 
     def add(self, url: str) -> None:
         """

@@ -14,6 +14,10 @@ async def index(request, response):
     response.body = "index page"
     return response
 
+@router.get('/static/:*params')
+async def statics(request,response):
+    response.body = "".join(request.params["params"])
+    return response
 
 @router.get('/login/')
 async def login(request, response):
