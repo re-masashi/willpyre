@@ -74,8 +74,7 @@ class App:
                 response_cookies = [
                     [
                         b'Set-Cookie',
-                        cookie_.encode() + b'=' + 
-                        response_.cookies[cookie_].cookie_str
+                        cookie_.encode() + b'=' + response_.cookies[cookie_].cookie_str
                     ]
                     for cookie_ in response_.cookies.keys()]
             else:

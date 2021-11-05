@@ -388,9 +388,9 @@ class Routes:
         route_match = self._match(parts)
         for param in list(route_match.keys()):
             route_param = route_match[param]
-            if isinstance(route_param,str):
+            if isinstance(route_param, str):
                 original_url = original_url.replace(route_param, param, 1)
-            else: # param is a list
+            else:  # param is a list
                 original_url = original_url.split(route_param[0])[0] + param
 
         if original_url[-1] != '/':

@@ -332,5 +332,4 @@ class HTTPException(Exception, Response):
         Response.__init__(self)
         self.status = 404
         self.content_type = content_type
-        self.body = body      
-        
+        self.body = body

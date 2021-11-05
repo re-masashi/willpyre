@@ -47,6 +47,7 @@ async def test_url_vars():
         assert resp.status_code == 200
         assert resp.text == "You requested the variable hello"
 
+
 @pytest.mark.asyncio
 async def test_url_many():
 

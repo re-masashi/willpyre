@@ -1,6 +1,5 @@
 from typing import Callable
 from copy import deepcopy
-from collections import namedtuple
 import traceback
 from .kua import Routes
 from .structure import (
@@ -9,7 +8,6 @@ from .structure import (
     Response405,
     Response500,
     Response404,
-    Endpoint
 )
 
 
@@ -36,7 +34,7 @@ class StaticRouter:
         self.config = dict()
         self.endpoints = dict()
 
-    def add_route(self, path: str, method: str, handler: Callable) -> None:
+    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
         if path[-1] != '/':
             path += '/'
         self.add_endpoint(path, endpoint_name)
@@ -58,16 +56,16 @@ class StaticRouter:
         # self.routes[method] = {}
         raise NotImplementedError
 
-    def add_endpoint(self, route:str, name:str=None):
+    def add_endpoint(self, route: str, name: str = None):
         if name is None:
             return
         if name in self.endpoints:
             raise RuntimeError(
                 f"Name exists with value {name}:{self.endpoints[name]} you cannot override !!!"
-                )
+            )
         self.endpoints[name] = route
 
-    def endpoint_for(name:str) -> str:
+    def endpoint_for(self, name: str) -> str:
         return self.endpoints[name]
 
     def get(self, path: str, **opts) -> Callable:
@@ -232,7 +230,7 @@ class Router(StaticRouter):
         self.WSKuaRoutes = Routes(self.validation_dict)
         super().__init__()
 
-    def add_route(self, path: str, method: str, handler: Callable, endpoint_name:str=None) -> None:
+    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
         if path[-1] != '/':
             path += '/'
         variablized_url = self.KuaRoutes.add(path)
