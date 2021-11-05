@@ -217,7 +217,7 @@ class Request:
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
 
-        if self.headers.get("content-type", "NO_CONTENT_TYPE") == "multipart/form-data":
+        if self.headers.get("content-type") == "multipart/form-data":
             self.body, self.files = parse_multipart(
                 self.headers["content_type"],
                 raw_body
@@ -226,7 +226,7 @@ class Request:
             self.body = TypedMultiMap(
                 parse.parse_qs(raw_body.decode())
             )
-            self.files = None
+            self.files = TypedMultiMap({})
 
         if 'cookie' in self.headers.keys():
             [self.cookies.update({_.split('=')[0]:_.split('=')[1]})
@@ -332,4 +332,5 @@ class HTTPException(Exception, Response):
         Response.__init__(self)
         self.status = 404
         self.content_type = content_type
-        self.body = body
+        self.body = body      
+        

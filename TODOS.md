@@ -1,6 +1,7 @@
 # TODOS
 -------
 - Write better docs.
-- Create beautiful sphinx theme.
+- Implement WebSockets.
+- Create a debug server.
 -------
 

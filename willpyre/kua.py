@@ -427,11 +427,8 @@ class Routes:
             elif part.startswith(':'):
                 _part = part[1:]
                 if '|' in _part:
+                    # Will raise a ValueError if more than one '|' is found.
                     _part, validation = _part.split('|')
-                    if validation.isinstance(tuple, list):
-                        raise RuntimeError(
-                            "Only one '|' allowed in url."
-                        )
                     validate[_part] = validation
                 curr_key_parts.append(_part)
                 variablized_url += _part + '/'
