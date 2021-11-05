@@ -87,7 +87,6 @@ class StaticRouter:
           self: :class:`Router`
           path(str): The Request path
 
-
         """
         def decorator(handler: Callable) -> Callable:
             self.add_route(path=path, method="GET", handler=handler)

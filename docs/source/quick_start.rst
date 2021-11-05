@@ -151,6 +151,7 @@ Validation
 Wilpyre supports validation of request parameters.
 
 You can add the routes like:
+
 .. code-block :: python
 
 	@router.get("/api/:userid|int")
@@ -175,7 +176,7 @@ Eg:
 
 .. code-block :: python
 	
-	@router.get('/files/*filepath')
+	@router.get('/files/:*filepath')
 	async def file_hosting(request, response):
 		filepath = request.params.get('filepath')
 		path = '/'
@@ -204,7 +205,7 @@ You can access it via ``request.query.get("name")``, and you will get the value 
 .. admonition:: A Good Practice
 	:class: note
 
-	As the ``query`` is a TypedMultiDict object, please use ``query.get(value)`` instead of query[value].
+	As the ``query`` is a :class:`TypedMultiDict` object, use ``query.get(value, fallback)`` instead of ``query[value]``.
 	If the value is missing, and you use the ``query[value]`` notation, you will get a value of ``None``. For other dict-like objects as well, try to use the ``query.get(value, fallback)`` function, with a fallback value. 
 
 ``request.body``
@@ -227,7 +228,7 @@ The same goes for multipart file uploads.
 ``request.files``
 -----------------
 This is a dict-like collection of the files uploaded. 
-The files uploaded are present as ``FileObject``s. These ``FileObject``s have ``filename``,
+The files uploaded are present as :class:`FileObject`s. These :class:`FileObject`s have ``filename``,
 ``name`` and ``payload`` which store the filename, name of the POST parameter, (i.e.
 the name in the HTML form.) and the content of the file.
 

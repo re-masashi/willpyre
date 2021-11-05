@@ -10,7 +10,7 @@ Websockets support is yet to come.
    Willpyre is micro, but it does not mean it is not capable of doing.
    It means, it lets you choose anything and runs with anything.
 
-The tutorial provides you with information about the components.
+The quick starts provides you with information about the components.
 It gives some basic examples as well.
 The documentation covers most of the basic parts of the code. 
 Extending the components, ``startup`` and ``shutdown`` tasks, custom error responses, etc.
