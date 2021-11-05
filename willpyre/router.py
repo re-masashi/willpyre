@@ -67,7 +67,7 @@ class StaticRouter:
                 )
         self.endpoints[name] = route
 
-    def endpoint_for(name:str): -> str
+    def endpoint_for(name:str) -> str:
         return self.endpoints[name]
 
     def get(self, path: str, **opts) -> Callable:
