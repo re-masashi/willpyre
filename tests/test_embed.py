@@ -23,7 +23,7 @@ app = App(router2)
 
 def test_embed():
     assert router2.KuaRoutes._routes.get("embed", "FAILED") != "FAILED"
-    assert router2.endpoint_for("embed.foo") == "/foo"
+    assert router2.endpoint_for("embed.foo") == "/foo/"
     assert router2.KuaRoutes._routes["embed"].get(
         ":route", "FAILED") != "FAILED"
     assert router2.KuaRoutes._routes["embed"].get("foo", "FAILED") != "FAILED"

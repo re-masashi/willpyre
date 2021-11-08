@@ -17,7 +17,7 @@ class StaticRouter:
     Not meant for usage. Acts as a base class.
     '''
 
-    def __init__(self):
+    def __init__(self, endpoint_prefix=""):
         self.routes = dict()
         self.routes["GET"] = {}
         self.routes["POST"] = {}
@@ -34,7 +34,7 @@ class StaticRouter:
         self.ws_routes = dict()
         self.config = dict()
         self.endpoints = dict()
-        self.endpoint_prefix = ""
+        self.endpoint_prefix = endpoint_prefix
 
     def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
         if path[-1] != '/':
@@ -241,7 +241,7 @@ class Router(StaticRouter):
         }
         self.KuaRoutes = Routes(self.validation_dict)
         self.WSKuaRoutes = Routes(self.validation_dict)
-        super().__init__()
+        super().__init__(endpoint_prefix)
 
     def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
         if path[-1] != '/':
