@@ -14,6 +14,7 @@ from .structure import (
 class StaticRouter:
     '''
     StaticRouter class has the HTTP methods, paths, and handlers.
+    Not meant for usage. Acts as a base class.
     '''
 
     def __init__(self):
@@ -33,6 +34,7 @@ class StaticRouter:
         self.ws_routes = dict()
         self.config = dict()
         self.endpoints = dict()
+        self.endpoint_prefix = ""
 
     def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
         if path[-1] != '/':
@@ -63,12 +65,12 @@ class StaticRouter:
             raise RuntimeError(
                 f"Name exists with value {name}:{self.endpoints[name]} you cannot override !!!"
             )
-        self.endpoints[name] = route
+        self.endpoints[self.endpoint_prefix+name] = route
 
     def endpoint_for(self, name: str) -> str:
         return self.endpoints[name]
 
-    def get(self, path: str, **opts) -> Callable:
+    def get(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a get query to the path.
 
@@ -84,14 +86,16 @@ class StaticRouter:
         Args:
           self: :class:`Router`
           path(str): The Request path
+          name(str): Endpoint name, default is none.
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="GET", handler=handler)
+            self.add_route(path=path, method="GET",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def post(self, path: str, **opts) -> Callable:
+    def post(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a post request to the path.
 
@@ -101,11 +105,12 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="POST", handler=handler)
+            self.add_route(path=path, method="POST",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def put(self, path: str, **opts) -> Callable:
+    def put(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a put request to the path.
 
@@ -115,11 +120,12 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="PUT", handler=handler)
+            self.add_route(path=path, method="PUT",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def fetch(self, path: str, **opts) -> Callable:
+    def fetch(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a fetch request to the path.
 
@@ -129,11 +135,12 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="FETCH", handler=handler)
+            self.add_route(path=path, method="FETCH",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def patch(self, path: str, **opts) -> Callable:
+    def patch(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a PATCH request to the path.
 
@@ -143,11 +150,12 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="PATCH", handler=handler)
+            self.add_route(path=path, method="PATCH",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def connect(self, path: str, **opts) -> Callable:
+    def connect(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a connect request to the path.
 
@@ -157,11 +165,12 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="CONNECT", handler=handler)
+            self.add_route(path=path, method="CONNECT",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def options(self, path: str, **opts) -> Callable:
+    def options(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on an options request to the path.
 
@@ -171,11 +180,12 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="OPTIONS", handler=handler)
+            self.add_route(path=path, method="OPTIONS",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
-    def trace(self, path: str, **opts) -> Callable:
+    def trace(self, path: str, name: str = None, **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a trace request to the path.
 
@@ -185,7 +195,8 @@ class StaticRouter:
 
         """
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="TRACE", handler=handler)
+            self.add_route(path=path, method="TRACE",
+                           handler=handler, endpoint_name=name)
             return handler
         return decorator
 
@@ -216,8 +227,10 @@ class StaticRouter:
 
 
 class Router(StaticRouter):
+    '''The Router class handles routing of URLs.
+    You need to give an endpoint prefix if you are embedding it.'''
 
-    def __init__(self) -> None:
+    def __init__(self, endpoint_prefix: str = "") -> None:
         self.validation_dict = {
             'int': lambda var: var.isdigit(),
             'lcase': lambda var: var.islower(),
@@ -240,27 +253,29 @@ class Router(StaticRouter):
     def add_ws_route(self, path: str, method: str, handler: Callable) -> None:
         raise NotImplementedError("You need to implement websockets.")
 
-    def embed_router(self, endpoint: str, router) -> None:
-        if endpoint[0] == '/':
-            endpoint = endpoint[1:]
-        if endpoint[-1] == '/':
-            endpoint = endpoint[:-1]
+    def embed_router(self, mount_at: str, router: "Router") -> None:
+        if mount_at[0] == '/':
+            mount_at = mount_at[1:]
+        if mount_at[-1] == '/':
+            mount_at = mount_at[:-1]
         if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
             self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
 
-        self.KuaRoutes._routes[endpoint] = deepcopy(
+        self.KuaRoutes._routes[mount_at] = deepcopy(
             router.KuaRoutes._routes)
         if router.KuaRoutes._routes.get('', "NOT_FOUND") != "NOT_FOUND":
-            self.KuaRoutes._routes[endpoint][":route"] = router.KuaRoutes._routes[''][':route']
-            self.KuaRoutes._routes[endpoint].pop('')
+            self.KuaRoutes._routes[mount_at][":route"] = router.KuaRoutes._routes[''][':route']
+            self.KuaRoutes._routes[mount_at].pop('')
 
         [
             self.routes[method].update(
-                (f"/{endpoint}{route}", router.routes[method][route])
-                for route in router.routes[method].keys()
+                (f"/{mount_at}{route}", router.routes[method][route])
+                for route in router.routes[method]
             )
-            for method in router.routes.keys()
+            for method in router.routes
         ]
+        for endpoint in router.endpoints:
+            self.add_endpoint(router.endpoints[endpoint], endpoint)
 
     async def handle(self, request, response) -> None:
         if request.path[-1] != '/':

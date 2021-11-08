@@ -3,15 +3,15 @@ from async_asgi_testclient import TestClient
 import pytest
 
 
-router = Router()
+router = Router(endpoint_prefix="embed.")
 
 
-@router.get("/")
+@router.get("/", "home")
 async def index(req, res):
     return TextResponse("INDEX")
 
 
-@router.get("/foo")
+@router.get("/foo", "foo")
 async def foo(req, res):
     return TextResponse("FOO")
 
@@ -23,6 +23,7 @@ app = App(router2)
 
 def test_embed():
     assert router2.KuaRoutes._routes.get("embed", "FAILED") != "FAILED"
+    assert router2.endpoint_for("embed.foo") == "/foo"
     assert router2.KuaRoutes._routes["embed"].get(
         ":route", "FAILED") != "FAILED"
     assert router2.KuaRoutes._routes["embed"].get("foo", "FAILED") != "FAILED"
