@@ -206,7 +206,7 @@ You can access it via ``request.query.get("name")``, and you will get the value 
 	:class: note
 
 	As the ``query`` is a :class:`TypedMultiDict` object, use ``query.get(value, fallback)`` instead of ``query[value]``.
-	If the value is missing, and you use the ``query[value]`` notation, you will get a value of ``None``. For other dict-like objects as well, try to use the ``query.get(value, fallback)`` function, with a fallback value. 
+	If the value is missing, and you use the ``query[value]`` notation, you will get a ``KeyError```. For other dict-like objects as well, try to use the ``query.get(value, fallback)`` function, with a fallback value. 
 
 ``request.body``
 ----------------
@@ -237,6 +237,12 @@ the name in the HTML form.) and the content of the file.
 	
 	Attackers may post malicious filenames. Such as "../../../../etc/passwd", or "../../../../etc/shadows/" and can have control on the server file system. Hence, it is better to not trust user uploaded file names and always saniize the names.
 
+
+.. admonition:: request.files or request.body?
+	:class: info
+	
+	If your uploaded data has a filename attribute in the HTTP headers, it is in ``files`, else in ``body``.
+	
 ``request.cookies``
 -------------------
 These contain the cookies of the client that have been sent, i.e, request cookies. You can access the cookies by ``request.cookies.get(cookienamehere)`` or, 
