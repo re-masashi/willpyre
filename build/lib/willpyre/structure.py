@@ -220,7 +220,7 @@ class Request:
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
 
-        # print("head", self.headers)
+        print("head", self.headers)
         content_type = self.headers.get("content-type", default="")
 
         if content_type.startswith("multipart/form-data"):
@@ -228,8 +228,9 @@ class Request:
                 self.headers.get("content-type"),
                 self.raw_body
             )
-            # print(self.files)
+            print(self.files)
         else:
+            print(content_type, "content-type")
             self.body = TypedMultiMap(
                 parse.parse_qs(raw_body.decode())
             )

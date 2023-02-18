@@ -3,7 +3,8 @@ from willpyre import (
     Router,
     JSONResponse,
     Cookie,
-    TextResponse)
+    TextResponse
+)
 
 
 router = Router()
@@ -20,6 +21,23 @@ async def statics(request, response):
     response.body = "".join(request.params["params"])
     return response
 
+@router.get('/trybruda/')
+async def trybr(request, response):
+    response.body = """
+    <form action="/trybruda" method="post" enctype="multipart/form-data">
+      <p><input type="text" name="text" value="text default">
+      <p><input type="file" name="file1">
+      <p><input type="file" name="file2">
+      <p><button type="submit">Submit</button>
+    </form>
+    """
+    return response
+
+
+@router.post('/trybruda/')
+async def trybrg(request, response):
+    response.body = request.files.get("file1", "No_data").content;
+    return response
 
 @router.get('/login/')
 async def login(request, response):
