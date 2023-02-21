@@ -1,5 +1,11 @@
+"""Willpyre. Fasten your seatbelts!"""
+
+
 from . import router, app, structure
 import json
+
+
+__version__ = "0.0.1"
 
 __all__ = ['JSONResponse', 'TextResponse', 'Router', 'App']
 

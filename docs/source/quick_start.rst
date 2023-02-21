@@ -206,7 +206,7 @@ You can access it via ``request.query.get("name")``, and you will get the value 
 	:class: note
 
 	As the ``query`` is a :class:`TypedMultiDict` object, use ``query.get(value, fallback)`` instead of ``query[value]``.
-	If the value is missing, and you use the ``query[value]`` notation, you will get a ``KeyError```. For other dict-like objects as well, try to use the ``query.get(value, fallback)`` function, with a fallback value. 
+	If the value is missing, and you use the ``query[value]`` notation, you will get a ``KeyError``. For other dict-like objects as well, try to use the ``query.get(value, fallback)`` function, with a fallback value. 
 
 ``request.body``
 ----------------

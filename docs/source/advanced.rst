@@ -1,7 +1,7 @@
 Advanced
 ========
 
-This sheet contains **slightly** concepts, (comparative to the others given in the tutoial).
+This sheet contains **slightly** concepts, (comparative to the others given in the tutorial).
 
 Extending the Router
 --------------------

@@ -11,7 +11,8 @@ from typing import (
     Dict,
     Union,
     Callable,
-    Iterator)
+    Iterator
+)
 from .structure import HTTPException
 
 __all__ = [

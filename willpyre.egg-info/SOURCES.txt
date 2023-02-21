@@ -1,0 +1,16 @@
+LICENSE.rst
+README.md
+setup.py
+tests/test_embed.py
+tests/test_plain.py
+tests/test_static_router.py
+willpyre/__init__.py
+willpyre/__main__.py
+willpyre/app.py
+willpyre/kua.py
+willpyre/router.py
+willpyre/structure.py
+willpyre.egg-info/PKG-INFO
+willpyre.egg-info/SOURCES.txt
+willpyre.egg-info/dependency_links.txt
+willpyre.egg-info/top_level.txt
