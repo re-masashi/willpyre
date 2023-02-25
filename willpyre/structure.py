@@ -263,6 +263,12 @@ class Response500(Response):
         self.body = "Internal Server Error"
         self.status = 500
 
+class Redirect(Response):
+    def __init__(self, location: str, status: int = 307):
+        super().__init__()
+        self.body = "Redirecting to " + location
+        self.status = status # https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections
+        self.headers["location"] = location
 
 class Cookie:
     '''

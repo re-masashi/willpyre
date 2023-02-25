@@ -7,9 +7,9 @@ import json
 
 __version__ = "0.0.2"
 
-__all__ = ['JSONResponse', 'TextResponse', 'Router', 'App']
+__all__ = ['JSONResponse', 'TextResponse', 'Router', 'App', 'Redirect']
 
-Router, App, Cookie = router.Router, app.App, structure.Cookie
+Router, App, Cookie, Redirect = router.Router, app.App, structure.Cookie, structure.Redirect
 
 
 class JSONResponse(structure.Response):

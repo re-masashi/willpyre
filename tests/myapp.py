@@ -3,7 +3,8 @@ from willpyre import (
     Router,
     JSONResponse,
     Cookie,
-    TextResponse
+    TextResponse,
+    Redirect
 )
 
 
@@ -14,7 +15,6 @@ router = Router()
 async def index(request, response):
     response.body = "index page"
     return response
-
 
 @router.get('/static/:*params')
 async def statics(request, response):
@@ -67,6 +67,10 @@ async def cookie(request, response):
     response.cookies["sessID"] = Cookie("Default", 60 * 60)
     response.body = "OK"
     return response
+
+@router.get('/returntohome')
+async def red(request, response):
+    return Redirect('/')
 
 
 @router.get('/json')
