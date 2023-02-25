@@ -251,7 +251,7 @@ class Response404(Response):
 class Response405(Response):
     def __init__(self):
         super().__init__()
-        self.headers['content_type'] = 'text/html'
+        self.headers['content-type'] = 'text/html'
         self.body = "Method not allowed"
         self.status = 405
 
@@ -259,7 +259,7 @@ class Response405(Response):
 class Response500(Response):
     def __init__(self):
         super().__init__()
-        self.headers['content_type'] = 'text/html'
+        self.headers['content-type'] = 'text/html'
         self.body = "Internal Server Error"
         self.status = 500
 
