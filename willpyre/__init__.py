@@ -5,7 +5,7 @@ from . import router, app, structure
 import json
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 __all__ = ['JSONResponse', 'TextResponse', 'Router', 'App', 'Redirect']
 

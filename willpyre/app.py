@@ -1,5 +1,6 @@
 from . import router, structure
 import logging
+import asyncio
 
 
 class App:
@@ -39,7 +40,6 @@ class App:
         router.config = self.config["router_config"]
         self.response = response
 
-# Websocket implementation yet to do.
     async def __call__(self, scope, receive, send):
         '''This will be serving as the ASGI app.
         The information about request will ge gained from the `scope` argument and response will be sent by `send`
@@ -52,13 +52,7 @@ class App:
         '''
 # HTTP
         if scope["type"] == "http":
-            body = b''
-            if scope["method"] in self.router.bodied_methods:
-                more_body = True
-                while more_body:
-                    message = await receive()
-                    body += message.get("body", b"")
-                    more_body = message.get("more_body", False)
+            body = await self._recieve(receive, scope["method"], b'')
 
             response_ = await self.router.handle(
                 structure.Request(
@@ -81,18 +75,25 @@ class App:
                     for cookie_ in response_.cookies.keys()]
             else:
                 response_cookies = []
-            await send({
-                'type': 'http.response.start',
-                'status': response_.status,
-                'headers': [
-                    [value.encode() for value in header_pair] for header_pair in list(response_.headers.items())
-                ] + response_cookies
-            })
 
-            await send({
-                'type': 'http.response.body',
-                'body': response_.body.encode()
-            })
+            resp_task = asyncio.ensure_future(
+                self._send(send, response_, response_cookies))
+            done, pending = await asyncio.wait(
+                [resp_task], return_when=asyncio.FIRST_COMPLETED
+            )
+            for task in pending:
+                task.cancel()
+
+            await asyncio.gather(*pending, return_exceptions=True)
+
+            for task in pending:
+                if not task.cancelled() and task.exception() is not None:
+                    raise task.exception()
+
+            for task in done:
+                if not task.cancelled() and task.exception() is not None:
+                    raise task.exception()
+
 # End HTTP
 # lifespan
         elif scope["type"] == "lifespan":
@@ -107,7 +108,42 @@ class App:
                     return
 # End lifespan
 # WebSocket
-
 # Not implemented yet.
-
 # End WebSocket
+
+    async def _recieve(self, receive, method: str, body: bytes) -> None:
+        '''
+        Get the data in HTTP body as in POST and other bodied methods.
+        '''
+        if method not in self.router.bodied_methods:
+            return b''
+        more_body = True
+        while more_body:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                break
+            if message["type"] == "http.request":
+                body += message.get("body", b'')
+                more_body = message.get("more_body", False)
+            else:
+                raise RuntimeError(
+                    f"Unhandled message type: {message['type']}")
+        return body
+
+    async def _send(self, send, response: structure.Response, cookies: list) -> None:
+        '''
+        Send HTTP body.
+        '''
+        await send({
+            'type': 'http.response.start',
+            'status': response.status,
+            'headers': [
+                [value.encode() for value in header_pair] for header_pair in list(response.headers.items())
+            ] + cookies
+        })
+
+        await send({
+            'type': 'http.response.body',
+            'body': response.body.encode(),
+            'more_body': False
+        })

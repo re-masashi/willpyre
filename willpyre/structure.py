@@ -20,9 +20,9 @@ def parse_multipart(content_type: str, data: bytes, decode: bool = False):
                 print(name)
                 files[name] = FileObject(
                     {
-                        "name":name,
-                        "content":payload.decode(),
-                        "filename":filename
+                        "name": name,
+                        "content": payload.decode(),
+                        "filename": filename
                     }
                 )
             else:
@@ -263,12 +263,22 @@ class Response500(Response):
         self.body = "Internal Server Error"
         self.status = 500
 
+
 class Redirect(Response):
-    def __init__(self, location: str, status: int = 307):
+    '''
+    Sends a redirect response to the user.
+    Args:
+    - location(str): Path to send the user after redirect.
+    - status(int): The HTTP status during redirect. Defaults to 303.
+    (More about redirects)[https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections]
+    '''
+
+    def __init__(self, location: str, status: int = 303):
         super().__init__()
         self.body = "Redirecting to " + location
-        self.status = status # https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections
+        self.status = status  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections
         self.headers["location"] = location
+
 
 class Cookie:
     '''

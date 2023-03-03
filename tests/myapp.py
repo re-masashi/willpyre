@@ -16,10 +16,12 @@ async def index(request, response):
     response.body = "index page"
     return response
 
+
 @router.get('/static/:*params')
 async def statics(request, response):
     response.body = "".join(request.params["params"])
     return response
+
 
 @router.get('/trybruda/')
 async def trybr(request, response):
@@ -36,8 +38,9 @@ async def trybr(request, response):
 
 @router.post('/trybruda/')
 async def trybrg(request, response):
-    response.body = request.files.get("file1", "No_data").content;
+    response.body = request.files.get("file1", "No_data").content
     return response
+
 
 @router.get('/login/')
 async def login(request, response):
@@ -67,6 +70,7 @@ async def cookie(request, response):
     response.cookies["sessID"] = Cookie("Default", 60 * 60)
     response.body = "OK"
     return response
+
 
 @router.get('/returntohome')
 async def red(request, response):

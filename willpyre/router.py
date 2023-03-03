@@ -314,7 +314,6 @@ class Router(StaticRouter):
             response_ = self.config.get("500Response", Response500())
             return response_
 
-
     async def handleWS(self, scope: dict, send, recieve) -> None:  # pragma: no cover
         # path = scope["path"]
         # if path[-1] != '/':
