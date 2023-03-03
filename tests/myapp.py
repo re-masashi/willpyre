@@ -91,4 +91,30 @@ router.add_route('/others', "TRACE", other_methods)
 router.add_route('/others', "PATCH", other_methods)
 router.add_route('/others', "PUT", other_methods)
 
+class Middleware:
+    def __init__(self, app, **options):
+        self.app = app
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        if scope["path"] == "/middleware":
+            await send({
+                'type': 'http.response.start',
+                'status': 200,
+                'headers': [
+                    (b'content-type', b'text/html')
+                ]
+            })
+
+            await send({
+                'type': 'http.response.body',
+                'body': b'OK',
+                'more_body': False
+            })
+        else:
+            await self.app(scope, receive, send)
+            
+
 main = App(router)
+main.add_middleware(Middleware)

@@ -1,4 +1,4 @@
-from . import router, structure
+from . import router, structure, asgi
 import logging
 import asyncio
 
@@ -39,77 +39,10 @@ class App:
         self.router = router
         router.config = self.config["router_config"]
         self.response = response
+        self._app = asgi.ASGI(self)
 
     async def __call__(self, scope, receive, send):
-        '''This will be serving as the ASGI app.
-        The information about request will ge gained from the `scope` argument and response will be sent by `send`
-
-        Args:
-          self: The App class
-          scope: The `scope` to communicate as per ASGI specification.
-          recieve: ASGI recieve function
-          send: ASGI send function
-        '''
-# HTTP
-        if scope["type"] == "http":
-            body = await self._recieve(receive, scope["method"], b'')
-
-            response_ = await self.router.handle(
-                structure.Request(
-                    method=scope["method"],
-                    path=scope["path"],
-                    headers=scope["headers"],
-                    raw_query=scope["query_string"],
-                    raw_body=body
-                ),
-                self.response
-            )
-
-            if response_.cookies is not dict():
-                response_cookies = [
-                    [
-                        b'Set-Cookie',
-                        cookie_.encode() + b'=' +
-                        response_.cookies[cookie_].cookie_str
-                    ]
-                    for cookie_ in response_.cookies.keys()]
-            else:
-                response_cookies = []
-
-            resp_task = asyncio.ensure_future(
-                self._send(send, response_, response_cookies))
-            done, pending = await asyncio.wait(
-                [resp_task], return_when=asyncio.FIRST_COMPLETED
-            )
-            for task in pending:
-                task.cancel()
-
-            await asyncio.gather(*pending, return_exceptions=True)
-
-            for task in pending:
-                if not task.cancelled() and task.exception() is not None:
-                    raise task.exception()
-
-            for task in done:
-                if not task.cancelled() and task.exception() is not None:
-                    raise task.exception()
-
-# End HTTP
-# lifespan
-        elif scope["type"] == "lifespan":
-            while True:
-                message = await receive()
-                if message['type'] == 'lifespan.startup':
-                    self.config["startup"]()
-                    await send({'type': 'lifespan.startup.complete'})
-                elif message['type'] == 'lifespan.shutdown':
-                    self.config["shutdown"]()
-                    await send({'type': 'lifespan.shutdown.complete'})
-                    return
-# End lifespan
-# WebSocket
-# Not implemented yet.
-# End WebSocket
+        await self._app(scope, receive, send)
 
     async def _recieve(self, receive, method: str, body: bytes) -> None:
         '''
@@ -147,3 +80,6 @@ class App:
             'body': response.body.encode(),
             'more_body': False
         })
+
+    def add_middleware(self, middleware, **options)->None:
+        self._app = middleware(self._app, **options)
