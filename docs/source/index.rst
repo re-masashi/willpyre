@@ -24,6 +24,7 @@ Contents
 .. toctree ::
    installation
    quick_start
+   middleware
    advanced
    documentation/index
 
