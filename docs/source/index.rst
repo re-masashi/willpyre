@@ -17,8 +17,6 @@ Extending the components, ``startup`` and ``shutdown`` tasks, custom error respo
 are present in the "advanced" section.
 
 
-
-
 --------
 Contents
 --------

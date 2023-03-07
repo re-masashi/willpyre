@@ -237,7 +237,8 @@ class Router(StaticRouter):
             'ucase': lambda var: var.isupper(),
             'alnum': lambda var: var.isalnum(),
             # Everything is a str
-            'str': True
+            'str': lambda var: True,
+            'nomatch': lambda var: False,
         }
         self.KuaRoutes = Routes(self.validation_dict)
         self.WSKuaRoutes = Routes(self.validation_dict)

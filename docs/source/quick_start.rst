@@ -49,12 +49,22 @@ URL Routing
 Willpyre allows you to define static routes and dynamic using the ``Router`` class.
 
 This can be imported from the ``willpyre`` module.
-In the first example, the app will send a response only to requests to '/' or  http://localhost:8000/
+In the first example, the app will send a response only to requests to '/' or  http://localhost:8000/. If you try requesting other routes such as '/asd' or '/qwerty' or anything else, you will get a 'Not found' response.
 This is because, nothing else was specified for other paths.
 
 The router specifies only one method to be specified on one path.
-If you want to specify more paths, you can use the function ``router.get('/anotherpath',index)`` then the function ``index``, that you defined in the example, will handle GET requests on ``/anotherpath`` as well. If you want POST requests to be handled.
-Then use ``router.post`` instead of ``router.get``.
+If you specified some path with `.get` method, it wulll only respond to HTTP `GET` requests.
+POST, PUT, FETCH, etc will result in a 'Not Found' response. 
+
+.. code-block :: python
+	@router.get('/')
+	async def index_get(request, response):
+		response.body = "Get"
+		return response
+
+The above code will only respond to GET requests.
+
+If you want to specify more paths, you can use the function ``router.get('/anotherpath',index)`` then the function ``index``, that you defined in the example, will handle GET requests on ``/anotherpath`` as well. If you want POST requests to be handled. Then use ``router.post`` instead of ``router.get``.
 
 Thus, the above example would become..
 
@@ -74,6 +84,8 @@ After running this with Uvicorn, you will see that if you go to http://localhost
 
 Embed a router
 --------------
+
+Sometimes you have multiple paths with a common prefix. It can be messy too usethem separately and, also typo-prone. You can instead embed the logic of common prefixes inside of a main router. In the end, we will pass the main router to the App.
 
 .. code-block :: python
 
@@ -105,11 +117,11 @@ And the other links will work as it is.
 
 .. note :: 
 
-	Do not make changes to the router after embedding it.
+	Do not make changes to the router after embedding it. This will lead to unexpected and undesirable outcomes.
 
 The router has an internal representation of routes.
 This representation is embedded in the router which wraps another router.
-You can check the source code, to see how its implemented.
+You can check the [source code](https://github.com/re-masashi/willpyre/tree/main/willpyre/kua.py), to see how its implemented.
 
 
 Variables in URL path
@@ -140,16 +152,15 @@ You will see that, you will find the text "**You requested the variable hello**"
 ``request.params`` is a dictionary object. And as you specified the variable name as ``:var`` you can access its value ``var`` as a key in the ``request.params`` dictionary.
 
 Now, say you want to have something like, ``https://example.com/api/:userid`` (where 
-``userid`` is an integer), and returns user by id. Fine, you can do that.
-But, if you want to add a route like, say, ``https://example.com/api/:username`` 
-which returns a user by username(it is a lowercase value.) What will you do?
+``userid`` is an integer), which returns user by id. How can you check if it is an integer? 
+Doing that on every parameter seems ugly.
 
 Here comes a solution:
 
 Validation
 ----------
 Wilpyre supports validation of request parameters.
-
+A validator basically checks if the variable in URL is of a desired type, else it returns a 'Not Found'.
 You can add the routes like:
 
 .. code-block :: python
@@ -159,12 +170,21 @@ You can add the routes like:
 	@router.add("/api/:username|lcase")
 	# Do something
 
+Thus, if the user sends 
+
 THe default validation is ``'str'`` which matches everything and 
 is implicitly passed when nothing is specified.
 
 The default validators are:
 
-``int``, ``lcase``, ``ucase``, ``str``, ``alnum``
+``int``, ``lcase``, ``ucase``, ``str``, ``alnum``, ``nomatch``
+
+You can add custom validators as well. 
+.. code-block :: python
+	router.validation_dict["super"] = lambda var: var == 'super'
+
+Now, if the parameter (something|super) is equal to 'super'.
+You should make sure that your validator shall be either a function or a lambda that takes one argument and returns a dict.
 
 Multiple Vars
 -------------
@@ -190,6 +210,9 @@ and if you head to http://localhost:8000/files/home/user/,
 you will see that the message will be "You requested a file at /home/user/". 
 If you request http://localhost:8000/files/somepath/some/other/,
 you will see that the message will be "You requested a path at /somepath/some/other"
+
+.. see-also::
+	Don't trust user input as filenames. See below.
 
 
 Request object

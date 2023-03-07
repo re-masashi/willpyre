@@ -135,9 +135,11 @@ def _is_safe(part: str) -> bool:
 def validate(
         key_parts: Sequence[str],
         variable_parts: VariablePartsIterType,
-        params_validate: dict) -> bool:
+        params_validate: dict,
+        validation_dict: dict) -> bool:
+    print(key_parts, variable_parts, params_validate)
     return all(
-        params_validate.get(param, _is_safe)(value)
+        validation_dict[params_validate[param]](value)
         for param, value in zip(key_parts, variable_parts))
 
 
@@ -192,12 +194,14 @@ RouteResolved.__doc__ = (
 
 def _resolve(
         variable_parts: VariablePartsType,
-        routes: Sequence[_Route]) -> Union[RouteResolved, None]:
+        routes: Sequence[_Route],
+        validation_dict: dict) -> Union[RouteResolved, None]:
     for route in routes:
         if validate(
                 route.key_parts,
                 variable_parts,
-                route.validate):
+                route.validate,
+                validation_dict):
             return make_params(
                 key_parts=route.key_parts,
                 variable_parts=variable_parts
@@ -334,7 +338,8 @@ class Routes:
 
                 route_resolved = _resolve(
                     variable_parts=unwrap(curr_variable_parts),
-                    routes=curr[self._ROUTE_NODE])
+                    routes=curr[self._ROUTE_NODE],
+                    validation_dict=self.validation_dict)
 
                 if route_resolved is None:
                     continue

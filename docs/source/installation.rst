@@ -9,7 +9,7 @@ Willpyre Installation
 -------------------
 .. code-block :: console
 
-	$ git clone https://github.com/Nafi-Amaan-Hossain/willpyre
+	$ git clone https://github.com/re-masashi/willpyre
 	$ cd willpyre
 	$ pip install .
 
@@ -24,7 +24,7 @@ Willpyre is based on the `ASGI specification`_ and can be used with any ASGI ser
 
 .. note :: 
 	Willpyre, does not prefer any specific ASGI server. It gives you the choice.
-	You can use any ASGI server like Uvicorn, Hypercorn, Daphne.
+	You can use any ASGI server like [Uvicorn](https://uvicorn.org), [Hypercorn](https://github.com/pgjones/hypercorn), [Daphne](https://github.com/django/daphne) or [Granian](https://github.com/emmett-framework/granian).
 
 Testing framework installation
 ------------------------------

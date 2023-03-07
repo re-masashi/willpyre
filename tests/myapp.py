@@ -57,13 +57,12 @@ async def post_login(request, response):
     print(response.body)
     return response
 
-
-@router.get('/api/:var')
+@router.get('/api/:var|int')
 async def api(request, response):
+    print("firsr")
     response.body = "You requested the variable " + \
         request.params.get("var", "and you got it..")
     return response
-
 
 @router.get('/cookie')
 async def cookie(request, response):
