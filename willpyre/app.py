@@ -81,5 +81,5 @@ class App:
             'more_body': False
         })
 
-    def add_middleware(self, middleware, **options)->None:
+    def add_middleware(self, middleware, **options) -> None:
         self._app = middleware(self._app, **options)

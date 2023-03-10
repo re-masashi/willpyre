@@ -1,5 +1,6 @@
 from urllib import parse
 import email
+import json
 
 
 def parse_multipart(content_type: str, data: bytes, decode: bool = False):
@@ -356,3 +357,39 @@ class HTTPException(Exception, Response):
         self.status = 404
         self.content_type = content_type
         self.body = body
+
+class JSONResponse(Response):
+    def __init__(
+            self,
+            data,
+            status=200,
+            content_type="application/json",
+            headers=TypedMultiMap({}),
+            cookies=dict()):
+        super().__init__(headers=headers, cookies=cookies,
+                         content_type=content_type, status=status)
+        self.body = json.dumps(data)
+
+class TextResponse(Response):
+    def __init__(
+            self,
+            data,
+            status=200,
+            content_type="text/plain",
+            headers=TypedMultiMap({}),
+            cookies=dict()):
+        super().__init__(headers=headers, cookies=cookies,
+                         content_type=content_type, status=status)
+        self.body = data
+
+class HTMLResponse(Response):
+    def __init__(
+            self,
+            data,
+            status=200,
+            content_type="text/html",
+            headers=TypedMultiMap({}),
+            cookies=dict()):
+        super().__init__(headers=headers, cookies=cookies,
+                         content_type=content_type, status=status)
+        self.body = data

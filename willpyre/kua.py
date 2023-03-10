@@ -138,6 +138,10 @@ def validate(
         params_validate: dict,
         validation_dict: dict) -> bool:
     print(key_parts, variable_parts, params_validate)
+    for var in variable_parts:
+        if isinstance(var, tuple):
+            return True
+
     return all(
         validation_dict[params_validate[param]](value)
         for param, value in zip(key_parts, variable_parts))

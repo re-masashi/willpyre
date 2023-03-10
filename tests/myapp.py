@@ -1,6 +1,7 @@
 from willpyre import (
     App,
     Router,
+    OpenAPIRouter,
     JSONResponse,
     Cookie,
     TextResponse,
@@ -8,7 +9,7 @@ from willpyre import (
 )
 
 
-router = Router()
+router = OpenAPIRouter() # Use APIRouter maybe
 
 
 @router.get('/')
@@ -57,12 +58,14 @@ async def post_login(request, response):
     print(response.body)
     return response
 
+
 @router.get('/api/:var|int')
 async def api(request, response):
     print("firsr")
     response.body = "You requested the variable " + \
         request.params.get("var", "and you got it..")
     return response
+
 
 @router.get('/cookie')
 async def cookie(request, response):
@@ -90,9 +93,11 @@ router.add_route('/others', "TRACE", other_methods)
 router.add_route('/others', "PATCH", other_methods)
 router.add_route('/others', "PUT", other_methods)
 
+
 class Middleware:
     def __init__(self, app, **options):
         self.app = app
+
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -113,7 +118,7 @@ class Middleware:
             })
         else:
             await self.app(scope, receive, send)
-            
+
 
 main = App(router)
 main.add_middleware(Middleware)

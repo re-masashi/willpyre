@@ -1,14 +1,24 @@
 from typing import Callable
 from copy import deepcopy
 import traceback
+import re
 from .kua import Routes
 from .structure import (
     HTTPException,
+    Request,
     Response,
     Response405,
     Response500,
     Response404,
+    JSONResponse,
+    HTMLResponse
 )
+from .openapi import (
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+    gen_openapi_schema
+)
+import re
 
 
 class StaticRouter:
@@ -36,7 +46,7 @@ class StaticRouter:
         self.endpoints = dict()
         self.endpoint_prefix = endpoint_prefix
 
-    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
+    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = '') -> None:
         if path[-1] != '/':
             path += '/'
         self.add_endpoint(path, endpoint_name)
@@ -44,7 +54,7 @@ class StaticRouter:
 
     def add_method(self, method: str):  # pragma: no cover
         '''
-        This should be used to adding HTTP methods to the routing dictionary
+        This should be used to adding custom HTTP methods to the routing dictionary
 
         Args:
           self: The :class:`Router`
@@ -58,8 +68,8 @@ class StaticRouter:
         # self.routes[method] = {}
         raise NotImplementedError
 
-    def add_endpoint(self, route: str, name: str = None):
-        if name is None:
+    def add_endpoint(self, route: str, name: str = ''):
+        if not name:
             return
         if name in self.endpoints:
             raise RuntimeError(
@@ -70,7 +80,7 @@ class StaticRouter:
     def endpoint_for(self, name: str) -> str:
         return self.endpoints[name]
 
-    def get(self, path: str, name: str = None, **opts) -> Callable:
+    def get(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a get query to the path.
 
@@ -95,7 +105,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def post(self, path: str, name: str = None, **opts) -> Callable:
+    def post(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a post request to the path.
 
@@ -110,7 +120,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def put(self, path: str, name: str = None, **opts) -> Callable:
+    def put(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a put request to the path.
 
@@ -125,7 +135,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def fetch(self, path: str, name: str = None, **opts) -> Callable:
+    def fetch(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a fetch request to the path.
 
@@ -140,7 +150,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def patch(self, path: str, name: str = None, **opts) -> Callable:
+    def patch(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a PATCH request to the path.
 
@@ -155,7 +165,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def connect(self, path: str, name: str = None, **opts) -> Callable:
+    def connect(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a connect request to the path.
 
@@ -170,7 +180,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def options(self, path: str, name: str = None, **opts) -> Callable:
+    def options(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on an options request to the path.
 
@@ -185,7 +195,7 @@ class StaticRouter:
             return handler
         return decorator
 
-    def trace(self, path: str, name: str = None, **opts) -> Callable:
+    def trace(self, path: str, name: str = '', **opts) -> Callable:
         """
         This is meant to be used as a decorator on a function, that will be executed on a trace request to the path.
 
@@ -230,7 +240,7 @@ class Router(StaticRouter):
     '''The Router class handles routing of URLs.
     You need to give an endpoint prefix if you are embedding it.'''
 
-    def __init__(self, endpoint_prefix: str = "") -> None:
+    def __init__(self, endpoint_prefix: str = ""):
         self.validation_dict = {
             'int': lambda var: var.isdigit(),
             'lcase': lambda var: var.islower(),
@@ -244,7 +254,7 @@ class Router(StaticRouter):
         self.WSKuaRoutes = Routes(self.validation_dict)
         super().__init__(endpoint_prefix)
 
-    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = None) -> None:
+    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = '') -> None:
         if path[-1] != '/':
             path += '/'
         variablized_url = self.KuaRoutes.add(path)
@@ -254,7 +264,7 @@ class Router(StaticRouter):
     def add_ws_route(self, path: str, method: str, handler: Callable) -> None:
         raise NotImplementedError("You need to implement websockets.")
 
-    def embed_router(self, mount_at: str, router: "Router") -> None:
+    def embed_router(self, mount_at: str, router) -> None:
         if mount_at[0] == '/':
             mount_at = mount_at[1:]
         if mount_at[-1] == '/':
@@ -278,7 +288,7 @@ class Router(StaticRouter):
         for endpoint in router.endpoints:
             self.add_endpoint(router.endpoints[endpoint], endpoint)
 
-    async def handle(self, request, response) -> None:
+    async def handle(self, request, response) -> Response:
         if request.path[-1] != '/':
             request.path += '/'
         try:
@@ -296,7 +306,7 @@ class Router(StaticRouter):
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())
-            response_ = self.config.get("500Response", Response500())
+            response_ = self.config.get("500Response", Response500())  # noqa
             return response_
         try:
             request.params, variablized_url = self.KuaRoutes.match(
@@ -328,3 +338,200 @@ class Router(StaticRouter):
         raise NotImplementedError(
             "You need to implement websockets, to use it."
         )
+
+
+class OpenAPIRouter(Router):
+    def __init__(
+        self,
+        description: str = "",
+        schemes: list = ['http', 'https'],
+        version: str = '0.0.1',
+        endpoint_prefix: str = "",
+        openapi_url: str = "/openapi.json",
+        oauth_redirect_url: str = "/docs/openapi-rediect",
+        tos_url: str = "/terms-of-service",
+        openapi_version: str = "3.0.0",
+        title: str = "",
+        docs_url="/docs",
+        tags=[],
+        dependencies=None,
+        swagger_params=None,
+        swagger_favicon: str = "/favicon.ico",
+        definitions: dict = {},
+        license=None,
+        contact=None,
+        host=None
+    ) -> None:
+
+        self.openapi_url = openapi_url
+        self.version = version
+        self.oauth2_redirect_url = oauth_redirect_url
+        self.tos_url = tos_url
+        self.openapi_version = openapi_version
+        self.title = title
+        self.tags = tags
+        self.dependencies = dependencies
+        self.docs_url = docs_url
+        self.swagger_params = swagger_params
+        self.paths = {}
+        self.definitions = definitions
+        self.license = license
+        self.schemes = schemes
+        self.description = description
+        self.contact = contact
+        self.host=host
+
+        self.openapi_schema = {}
+
+        super().__init__(endpoint_prefix)
+
+        # Init done. Post-init stuff here
+
+        if self.openapi_url != None:
+
+            async def openapi(req: Request, res: Response) -> JSONResponse:
+                return JSONResponse(self.openapi())
+
+            self.add_route(self.openapi_url, "GET",
+                           openapi)
+
+        async def swagger_ui_html(req: Request, res: Response) -> HTMLResponse:
+            self.openapi_url
+            oauth2_redirect_url = self.oauth2_redirect_url
+            if oauth2_redirect_url:
+                oauth2_redirect_url = oauth_redirect_url
+            return get_swagger_ui_html(
+                openapi_url=openapi_url,
+                title=self.title + " | Swagger UI",
+                oauth2_redirect_url=oauth2_redirect_url,
+                init_oauth=None, #todo: Create some init option
+                swagger_params=self.swagger_params,
+            )
+
+        self.add_route(self.docs_url, "GET", swagger_ui_html)
+
+        if self.oauth2_redirect_url:
+
+            async def swagger_ui_redirect(req: Request) -> Response:
+                return get_swagger_ui_oauth2_redirect_html()
+
+            self.add_route(
+                self.oauth2_redirect_url,
+                "GET",
+                swagger_ui_redirect,
+            )
+            self.add_route(
+                self.oauth2_redirect_url,
+                "POST",
+                swagger_ui_redirect,
+            )
+            self.add_route(
+                self.oauth2_redirect_url,
+                "PUT",
+                swagger_ui_redirect,
+            )
+
+
+    def add_route(
+        self,
+        path: str,
+        method: str,
+        handler: Callable,
+        # OpenAPI stuff now
+        endpoint_name: str = '',
+        response_model=None,
+        status: int = 200,
+        deprecated: bool = False,
+        operation_id=None,
+        summary: str = "",
+        response_description: str = "Successful",
+        open_api_extra=None,
+        tags=[],
+        consumes=["application/json"],
+        produces=["application/json"],
+        parameters=["parameters"],
+        responses={"200": {"description": ""}},
+        security=[],
+        path_parameters={}
+    ):
+        if path[-1] != '/':
+            path += '/'
+        variablized_url = self.KuaRoutes.add(path)
+        self.add_endpoint(path, endpoint_name)
+        self.routes[method][variablized_url] = handler
+        match = re.search(r'/:.+', path)
+        # Muddy RegEx to turn 'a/:path/' into 'a/{path}/'
+        if match:
+            path = path[:match.span()[0]] + '/{' + match.group()[2:-1]+'}/'
+
+        self.paths[path] = {}
+        print(method.lower())
+        self.paths[path][method.lower()] = {
+            "tags": tags,
+            "summary": summary,
+            "consumes": consumes,
+            "produces": produces,
+            "parameters": path_parameters,
+            "responses": responses,
+            "security": security
+        }
+
+    def add_api_route(
+        self,
+        path: str,
+        methods: list,
+        handler: Callable,
+        # OpenAPI stuff now
+        endpoint_name: str = '',
+        response_model=None,
+        status: int = 200,
+        deprecated: bool = False,
+        operation_id=None,
+        summary: str = "",
+        response_description: str = "Successful",
+        openapi_extra=None,
+        tags=[],
+        consumes=["application/json"],
+        produces=["application/json"],
+        parameters=["parameters"],
+        responses={"200": {"description": ""}},
+        security=[]
+    ):
+        for method in methods:
+            self.add_route(
+                path,
+                method,
+                handler,
+                # OpenAPI stuff now
+                endpoint_name,
+                response_model=response_model,
+                status=status,
+                deprecated=deprecated,
+                operation_id=operation_id,
+                summary=summary,
+                response_description=response_description,
+                openapi_extra=openapi_extra,
+                tags=tags,
+                consumes=consumes,
+                produces=produces,
+                parameters=parameters,
+                responses=responses,
+                security=[]
+            )
+
+    def openapi(self):
+        if not self.openapi_schema:
+            self.openapi_schema = gen_openapi_schema(
+                title=self.title,
+                version=self.version,
+                openapi_version=self.openapi_version,
+                description=self.description,
+                terms_of_service=self.tos_url,
+                license=self.license,
+                routes=self.routes,
+                tags=self.tags,
+                contact=self.contact,
+                host=self.host,
+                paths=self.paths
+            )
+        return self.openapi_schema

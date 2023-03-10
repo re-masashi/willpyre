@@ -43,9 +43,11 @@ async def test_trailing_slash():
 async def test_url_vars():
 
     async with TestClient(main) as client:
-        resp = await client.get("/api/hello")
+        resp = await client.get("/api/123")
         assert resp.status_code == 200
-        assert resp.text == "You requested the variable hello"
+        assert resp.text == "You requested the variable 123"
+        resp = await client.get("/api/hello")
+        assert resp.status_code == 404
 
 
 @pytest.mark.asyncio
