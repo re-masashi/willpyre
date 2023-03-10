@@ -58,7 +58,7 @@ async def post_login(request, response):
     return response
 
 
-@router.get('/api/:var')
+@router.get('/api/:var|int')
 async def api(request, response):
     print("firsr")
     response.body = "You requested the variable " + \
