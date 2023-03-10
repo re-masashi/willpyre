@@ -1,7 +1,6 @@
 from willpyre import (
     App,
     Router,
-    OpenAPIRouter,
     JSONResponse,
     Cookie,
     TextResponse,
@@ -9,7 +8,7 @@ from willpyre import (
 )
 
 
-router = OpenAPIRouter() # Use APIRouter maybe
+router = Router()  # Use APIRouter maybe
 
 
 @router.get('/')

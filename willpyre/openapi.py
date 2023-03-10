@@ -1,7 +1,8 @@
-from .structure import HTMLResponse, JSONResponse
+from .structure import HTMLResponse
 import json
 
 # TODO: Clean up the HTML part. Too messy.
+
 
 def get_swagger_ui_html(
     openapi_url: str,
@@ -14,16 +15,16 @@ def get_swagger_ui_html(
     swagger_params=None,
     swagger_presets: list = []
 ) -> HTMLResponse:
-    current_swagger_ui_parameters =  {
+    current_swagger_ui_parameters = {
         "dom_id": "#swagger-ui",
         "layout": "BaseLayout",
         "deepLinking": True,
         "showExtensions": True,
         "showCommonExtensions": True
     }
-    
+
     if swagger_params:
-        current_swagger_ui_parameters.update(swagger_ui_parameters)
+        current_swagger_ui_parameters.update(swagger_params)
 
     html = f"""
     <!DOCTYPE html>

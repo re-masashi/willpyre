@@ -198,7 +198,8 @@ class Request:
     '''
     params, cookies = {}, {}
 
-    def __init__(self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args):
+    def __init__(self, method: str, path: str, raw_body: bytes,
+                 raw_query: bytes, headers, *args):
         '''
 
         Args:
@@ -358,6 +359,7 @@ class HTTPException(Exception, Response):
         self.content_type = content_type
         self.body = body
 
+
 class JSONResponse(Response):
     def __init__(
             self,
@@ -370,6 +372,7 @@ class JSONResponse(Response):
                          content_type=content_type, status=status)
         self.body = json.dumps(data)
 
+
 class TextResponse(Response):
     def __init__(
             self,
@@ -381,6 +384,7 @@ class TextResponse(Response):
         super().__init__(headers=headers, cookies=cookies,
                          content_type=content_type, status=status)
         self.body = data
+
 
 class HTMLResponse(Response):
     def __init__(

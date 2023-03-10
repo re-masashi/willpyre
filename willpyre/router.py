@@ -18,7 +18,6 @@ from .openapi import (
     get_swagger_ui_oauth2_redirect_html,
     gen_openapi_schema
 )
-import re
 
 
 class StaticRouter:
@@ -46,7 +45,8 @@ class StaticRouter:
         self.endpoints = dict()
         self.endpoint_prefix = endpoint_prefix
 
-    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = '') -> None:
+    def add_route(self, path: str, method: str, handler: Callable,
+                  endpoint_name: str = '') -> None:
         if path[-1] != '/':
             path += '/'
         self.add_endpoint(path, endpoint_name)
@@ -75,7 +75,7 @@ class StaticRouter:
             raise RuntimeError(
                 f"Name exists with value {name}:{self.endpoints[name]} you cannot override !!!"
             )
-        self.endpoints[self.endpoint_prefix+name] = route
+        self.endpoints[self.endpoint_prefix + name] = route
 
     def endpoint_for(self, name: str) -> str:
         return self.endpoints[name]
@@ -254,7 +254,8 @@ class Router(StaticRouter):
         self.WSKuaRoutes = Routes(self.validation_dict)
         super().__init__(endpoint_prefix)
 
-    def add_route(self, path: str, method: str, handler: Callable, endpoint_name: str = '') -> None:
+    def add_route(self, path: str, method: str, handler: Callable,
+                  endpoint_name: str = '') -> None:
         if path[-1] != '/':
             path += '/'
         variablized_url = self.KuaRoutes.add(path)
@@ -379,7 +380,7 @@ class OpenAPIRouter(Router):
         self.schemes = schemes
         self.description = description
         self.contact = contact
-        self.host=host
+        self.host = host
 
         self.openapi_schema = {}
 
@@ -387,7 +388,7 @@ class OpenAPIRouter(Router):
 
         # Init done. Post-init stuff here
 
-        if self.openapi_url != None:
+        if self.openapi_url is not None:
 
             async def openapi(req: Request, res: Response) -> JSONResponse:
                 return JSONResponse(self.openapi())
@@ -404,7 +405,7 @@ class OpenAPIRouter(Router):
                 openapi_url=openapi_url,
                 title=self.title + " | Swagger UI",
                 oauth2_redirect_url=oauth2_redirect_url,
-                init_oauth=None, #todo: Create some init option
+                init_oauth=None,  # todo: Create some init option
                 swagger_params=self.swagger_params,
             )
 
@@ -430,7 +431,6 @@ class OpenAPIRouter(Router):
                 "PUT",
                 swagger_ui_redirect,
             )
-
 
     def add_route(
         self,
@@ -462,7 +462,7 @@ class OpenAPIRouter(Router):
         match = re.search(r'/:.+', path)
         # Muddy RegEx to turn 'a/:path/' into 'a/{path}/'
         if match:
-            path = path[:match.span()[0]] + '/{' + match.group()[2:-1]+'}/'
+            path = path[:match.span()[0]] + '/{' + match.group()[2:-1] + '}/'
 
         self.paths[path] = {}
         print(method.lower())

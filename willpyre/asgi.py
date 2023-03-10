@@ -1,5 +1,4 @@
-from . import router, structure
-import logging
+from . import structure
 import asyncio
 
 

@@ -1,6 +1,5 @@
 from . import router, structure, asgi
 import logging
-import asyncio
 
 
 class App:

@@ -2,7 +2,6 @@
 
 
 from . import router, app, structure
-import json
 
 
 __version__ = "0.0.7"
@@ -18,7 +17,7 @@ __all__ = [
     'Redirect'
 ]
 
-Router =  router.Router
+Router = router.Router
 App = app.App
 Cookie = structure.Cookie
 Redirect = structure.Redirect
