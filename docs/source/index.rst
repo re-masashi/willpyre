@@ -3,7 +3,7 @@ Willpyre
 
 Willpyre provides abstraction over ASGI.
 It supports HTTP without external dependencies.
-Websockets support is yet to come.
+Websockets support is yet to come. [You can still use python-socketio].
 
 .. admonition :: Micro-framework
 
