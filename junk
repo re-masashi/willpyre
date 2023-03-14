@@ -1,0 +1,34 @@
+path_ = '/'
+parts = path.split('/')
+for part in parts:
+    if part == '':
+        continue
+
+    if ':' in part:
+        var = part[1:] # omit the :
+        validation = 'str'
+        
+        if '|' in part:
+            var, validation = part.split('|')
+
+        path_ += '{'+var+'}/'
+        if auto_path_parameters:
+            path_parameters += [{
+                "name": var,
+                "reqired": True,
+                "type": validation,
+                "in": "path"
+            }]
+    else:
+        path_ += part + '/'
+
+self.paths[path_]={}
+self.paths[path_][method.lower()] = {
+    "tags": tags,
+    "summary": summary,
+    "consumes": consumes,
+    "produces": produces,
+    "parameters": path_parameters,
+    "responses": responses,
+    "security": security
+}

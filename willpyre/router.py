@@ -2,6 +2,7 @@ from typing import Callable
 from copy import deepcopy
 import traceback
 import re
+from collections import OrderedDict
 from .kua import Routes
 from .structure import (
     HTTPException,
@@ -300,8 +301,6 @@ class Router(StaticRouter):
         except KeyError:
             # pdb.set_trace()
             # Key errors occur on when no method is found on a route.
-            print(self.routes)
-            print(request.method)
             response_ = self.config.get("405Response", Response405())
             return response_
         except Exception:
@@ -394,7 +393,7 @@ class OpenAPIRouter(Router):
                 return JSONResponse(self.openapi())
 
             self.add_route(self.openapi_url, "GET",
-                           openapi)
+                           openapi, no_docs=True)
 
         async def swagger_ui_html(req: Request, res: Response) -> HTMLResponse:
             self.openapi_url
@@ -409,7 +408,7 @@ class OpenAPIRouter(Router):
                 swagger_params=self.swagger_params,
             )
 
-        self.add_route(self.docs_url, "GET", swagger_ui_html)
+        self.add_route(self.docs_url, "GET", swagger_ui_html, no_docs=True)
 
         if self.oauth2_redirect_url:
 
@@ -420,16 +419,19 @@ class OpenAPIRouter(Router):
                 self.oauth2_redirect_url,
                 "GET",
                 swagger_ui_redirect,
+                no_docs=True
             )
             self.add_route(
                 self.oauth2_redirect_url,
                 "POST",
                 swagger_ui_redirect,
+                no_docs=True
             )
             self.add_route(
                 self.oauth2_redirect_url,
                 "PUT",
                 swagger_ui_redirect,
+                no_docs=True
             )
 
     def add_route(
@@ -445,28 +447,50 @@ class OpenAPIRouter(Router):
         operation_id=None,
         summary: str = "",
         response_description: str = "Successful",
-        open_api_extra=None,
+        openapi_extra=None,
         tags=[],
         consumes=["application/json"],
         produces=["application/json"],
         parameters=["parameters"],
         responses={"200": {"description": ""}},
         security=[],
-        path_parameters={}
+        path_parameters=[],
+        auto_path_parameters=True,
+        no_docs: bool = False,
     ):
-        if path[-1] != '/':
-            path += '/'
-        variablized_url = self.KuaRoutes.add(path)
-        self.add_endpoint(path, endpoint_name)
-        self.routes[method][variablized_url] = handler
-        match = re.search(r'/:.+', path)
-        # Muddy RegEx to turn 'a/:path/' into 'a/{path}/'
-        if match:
-            path = path[:match.span()[0]] + '/{' + match.group()[2:-1] + '}/'
 
-        self.paths[path] = {}
-        print(method.lower())
-        self.paths[path][method.lower()] = {
+        Router.add_route(self, path, method, handler)
+
+        if no_docs:
+            return
+
+        path_ = path
+
+        match = re.search(r'/:[^/]+', path_)
+        i = 0
+
+        while match: # match becomes None when there are no more occurences
+            var = match.group()[2:]
+            path_ = path_[:match.span()[0]] + '/{' + var + '}/'
+            if '|' not in var:
+                var += '|str'
+
+            var, validation = var.split('|')
+            match = re.search(r'/:[^/]+', path_)
+                        
+            params = [{
+                    "name": var,
+                    "reqired": True,
+                    "type": validation,
+                    "in": "path"
+                }]
+            
+            i += 1
+            if auto_path_parameters:
+                path_parameters += params
+
+        self.paths[path_]={}
+        self.paths[path_][method.lower()] = {
             "tags": tags,
             "summary": summary,
             "consumes": consumes,
@@ -474,13 +498,14 @@ class OpenAPIRouter(Router):
             "parameters": path_parameters,
             "responses": responses,
             "security": security
-        }
+        } 
+
 
     def add_api_route(
         self,
         path: str,
-        methods: list,
         handler: Callable,
+        methods: list=["GET","POST"],
         # OpenAPI stuff now
         endpoint_name: str = '',
         response_model=None,

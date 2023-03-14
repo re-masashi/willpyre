@@ -13,14 +13,12 @@ router = APIRouter(
     title="Simple API"
 )  # Use APIRouter maybe
 
-async def var(req, res): 
+async def var(req, res):
     return JSONResponse({
         "response":"OK",
         "var": req.params.get('var')
     })
 
-router.add_api_route('/api/:var',  var)
-
-
+router.add_api_route('/api/:var',  var, ["GET"], tags=["easy"])
 
 main = App(router)

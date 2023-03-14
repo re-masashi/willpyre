@@ -198,6 +198,7 @@ def gen_openapi_schema(
 
     schema["openapi"] = openapi_version
 
+
     schema["paths"] = paths
     schema["info"] = info
     schema["version"] = version

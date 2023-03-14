@@ -137,7 +137,6 @@ def validate(
         variable_parts: VariablePartsIterType,
         params_validate: dict,
         validation_dict: dict) -> bool:
-    print(key_parts, variable_parts, params_validate)
     for var in variable_parts:
         if isinstance(var, tuple):
             return True
@@ -436,10 +435,11 @@ class Routes:
 
             elif part.startswith(':'):
                 _part = part[1:]
-                if '|' in _part:
-                    # Will raise a ValueError if more than one '|' is found.
-                    _part, validation = _part.split('|')
-                    validate[_part] = validation
+                if '|' not in _part:
+                    _part += '|str'
+
+                _part, validation = _part.split('|')
+                validate[_part] = validation
                 curr_key_parts.append(_part)
                 variablized_url += _part + '/'
                 part = self._VAR_NODE
