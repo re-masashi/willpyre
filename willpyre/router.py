@@ -340,7 +340,7 @@ class Router(StaticRouter):
         )
 
 
-class OpenAPIRouter(Router):
+class OpenAPIRouter(Router): # pragma: no cover
     def __init__(
         self,
         description: str = "",

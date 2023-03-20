@@ -14,6 +14,9 @@ router = APIRouter(
 )  # Use APIRouter maybe
 
 async def var(req, res):
+    '''
+    Return ok
+    '''
     return JSONResponse({
         "response":"OK",
         "var": req.params.get('var')

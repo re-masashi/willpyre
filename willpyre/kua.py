@@ -125,11 +125,6 @@ def make_params(
 _SAFE_COMPONENT = re.compile(r'[ \w\-_.]+')
 
 
-def _is_safe(part: str) -> bool:
-    if isinstance(part, tuple):  # /:*parts/
-        return all(_is_safe(p) for p in part)
-
-    return _SAFE_COMPONENT.fullmatch(part) is not None
 
 
 def validate(

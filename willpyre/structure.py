@@ -3,7 +3,7 @@ import email
 import json
 
 
-def parse_multipart(content_type: str, data: bytes, decode: bool = False):
+def parse_multipart(content_type: str, data: bytes, decode: bool = False) -> list: # pragma: no cover
     post_data = f"""Content-Type: {content_type}
 
         {data.decode()}"""
@@ -12,13 +12,13 @@ def parse_multipart(content_type: str, data: bytes, decode: bool = False):
     body = TypedMultiMap({})
     if msg.is_multipart():
         for part in msg.get_payload():
+            print(name)
             name = part.get_param(
                 'name', header='content-disposition')
             filename = part.get_param(
                 'filename', header='content-disposition')
             payload = part.get_payload(decode=True)
             if filename is not None:
-                print(name)
                 files[name] = FileObject(
                     {
                         "name": name,
@@ -224,6 +224,7 @@ class Request:
 
         # print("head", self.headers)
         content_type = self.headers.get("content-type", default="")
+        self.content_type = content_type
 
         if content_type.startswith("multipart/form-data"):
             self.body, self.files = parse_multipart(

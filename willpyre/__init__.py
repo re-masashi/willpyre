@@ -12,7 +12,7 @@ __all__ = [
     'HTMLResponse',
     'Router',
     'OpenAPIRouter',
-    'APIRouter',  # just a shorter alia
+    'APIRouter',  # just a shorter alias
     'App',
     'Redirect'
 ]

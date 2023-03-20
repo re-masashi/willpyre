@@ -86,11 +86,18 @@ async def json_(req, res):
 async def other_methods(req, res):
     return TextResponse("others")
 
+@router.put('/multipart')
+async def multi(req, res):
+    print(req.files)
+    print("content type", req.content_type)
+    return TextResponse(req.files.get('foo', '').content)
+
 
 router.add_route('/others', "FETCH", other_methods)
 router.add_route('/others', "TRACE", other_methods)
 router.add_route('/others', "PATCH", other_methods)
 router.add_route('/others', "PUT", other_methods)
+
 
 
 class Middleware:

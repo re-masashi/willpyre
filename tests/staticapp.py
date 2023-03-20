@@ -30,7 +30,6 @@ async def cookie(request, response):
     response.body = "OK"
     return response
 
-
 @router.get('/json')
 async def json_(req, res):
     return JSONResponse({'a': 'b'})

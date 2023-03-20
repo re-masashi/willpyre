@@ -33,23 +33,8 @@ class ASGI:
             else:
                 response_cookies = []
 
-            resp_task = asyncio.ensure_future(
-                self._send(send, response_, response_cookies))
-            done, pending = await asyncio.wait(
-                [resp_task], return_when=asyncio.FIRST_COMPLETED
-            )
-            for task in pending:
-                task.cancel()
+            await self._send(send, response_, response_cookies)
 
-            await asyncio.gather(*pending, return_exceptions=True)
-
-            for task in pending:
-                if not task.cancelled() and task.exception() is not None:
-                    raise task.exception()
-
-            for task in done:
-                if not task.cancelled() and task.exception() is not None:
-                    raise task.exception()
            # End HTTP
            # lifespan
         elif scope["type"] == "lifespan":

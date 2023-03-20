@@ -71,7 +71,7 @@ async def test_utils():
 @pytest.mark.asyncio
 async def test_response404():
     async with TestClient(main) as client:
-        resp = await client.get("/non-exhistent")
+        resp = await client.get("/non-existent")
         assert resp.text == "Not found"
         assert resp.status_code == 404
 

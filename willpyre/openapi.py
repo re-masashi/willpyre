@@ -4,7 +4,7 @@ import json
 # TODO: Clean up the HTML part. Too messy.
 
 
-def get_swagger_ui_html(
+def get_swagger_ui_html( # pragma: no cover
     openapi_url: str,
     title: str,
     swagger_js_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js",
@@ -14,7 +14,7 @@ def get_swagger_ui_html(
     init_oauth=None,
     swagger_params=None,
     swagger_presets: list = []
-) -> HTMLResponse:
+) -> HTMLResponse: # pragma: no cover
     current_swagger_ui_parameters = {
         "dom_id": "#swagger-ui",
         "layout": "BaseLayout",
@@ -78,7 +78,7 @@ def get_swagger_ui_html(
     return HTMLResponse(html)
 
 
-def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse:
+def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse: # pragma: no cover
     # https://github.com/swagger-api/swagger-ui/blob/v4.18.0/dist/oauth2-redirect.html
     html = """
     <!doctype html>
@@ -164,7 +164,7 @@ def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse:
     return HTMLResponse(content=html)
 
 
-def gen_openapi_schema(
+def gen_openapi_schema( # pragma: no cover
     title,
     version,
     openapi_version,
@@ -176,7 +176,7 @@ def gen_openapi_schema(
     tags,
     host,
     paths,
-) -> dict:
+) -> dict: # pragma: no cover
     schema = {}
     info = {
         "title": title,
@@ -204,3 +204,15 @@ def gen_openapi_schema(
     schema["version"] = version
 
     return schema
+
+
+def schema(cls): # pragma: no cover
+    '''
+    Intended to be used as a decorator.
+    @schema
+    class Item:
+        itemid: int
+        name: str
+        seller: Seller # another schema
+    '''
+    pass

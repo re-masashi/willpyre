@@ -62,3 +62,11 @@ async def test_patch():
     async with TestClient(main) as client:
         resp = await client.patch("/others")
         assert resp.text == "others"
+
+@pytest.mark.asyncio
+async def test_404():
+
+    async with TestClient(main) as client:
+        resp = await client.put("/non-existent")
+        assert resp.text == "Not found"
+        assert resp.status_code == 404

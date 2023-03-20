@@ -43,42 +43,5 @@ class App:
     async def __call__(self, scope, receive, send):
         await self._app(scope, receive, send)
 
-    async def _recieve(self, receive, method: str, body: bytes) -> None:
-        '''
-        Get the data in HTTP body as in POST and other bodied methods.
-        '''
-        if method not in self.router.bodied_methods:
-            return b''
-        more_body = True
-        while more_body:
-            message = await receive()
-            if message["type"] == "http.disconnect":
-                break
-            if message["type"] == "http.request":
-                body += message.get("body", b'')
-                more_body = message.get("more_body", False)
-            else:
-                raise RuntimeError(
-                    f"Unhandled message type: {message['type']}")
-        return body
-
-    async def _send(self, send, response: structure.Response, cookies: list) -> None:
-        '''
-        Send HTTP body.
-        '''
-        await send({
-            'type': 'http.response.start',
-            'status': response.status,
-            'headers': [
-                [value.encode() for value in header_pair] for header_pair in list(response.headers.items())
-            ] + cookies
-        })
-
-        await send({
-            'type': 'http.response.body',
-            'body': response.body.encode(),
-            'more_body': False
-        })
-
     def add_middleware(self, middleware, **options) -> None:
         self._app = middleware(self._app, **options)
