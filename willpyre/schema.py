@@ -108,7 +108,6 @@ def schema(cls):
     setattr(cls, "__FIELDS__", fields)
     return cls
 
-
 def _match_type(annotation, value):
     if annotation is str:
         if type(value) is str:
@@ -152,7 +151,6 @@ def _match_type(annotation, value):
 
     raise NotImplementedError(f"Annotation {annotation} not implemented")
 
-
 def _validate(field, value):
     if value is Missing:
         if field.default is not Missing:
@@ -161,8 +159,7 @@ def _validate(field, value):
 
     return _match_type(field.annotation, value)
 
-
-def validate_json(schema, data):
+def validate_json(schema, data: dict):
     """Validate the given data dictionary against a schema and
     instantiate the schema.
     Raises:
@@ -180,22 +177,13 @@ def validate_json(schema, data):
             value = data.get(field.name, Missing)
             params[field.name] = _validate(field, value)
         except ValidationError as e:
-            errors[field.name] = e.reasons
+            errors[field.name] = "error"
 
     if errors != {}:
         raise ValidationError(errors)
 
-    print(params)
-
-
 def schema_repr(schema):
-    """Validate the given data dictionary against a schema and
-    instantiate the schema.
-    Raises:
-      ValidationError: When the input data is not valid.
-    Parameters:
-      schema: The schema class to validate the data against.
-      data: Data to validate against and populate the schema with.
+    """
     """
     if not (isinstance(schema, type) and hasattr(schema, "__FIELDS__")):
         raise TypeError(f"{schema} is not a valid schema")
@@ -220,3 +208,45 @@ def schema_repr(schema):
         params[field.name] = {"type": annotation}
 
     return params
+
+def schema_to_json(schema):
+    if not (isinstance(schema, type) and hasattr(schema, "__FIELDS__")):
+        raise TypeError(f"{schema} is not a valid schema")
+    
+    errors, params = {}, {}
+    for field in schema.__FIELDS__.values():
+        try:
+            value = field.default
+            if value is Missing:
+                raise ValueError('Value cannot be unpopulated.')
+            params[field.name] = _validate(field, value)
+        except ValidationError as e:
+            errors[field.name] = "error"
+
+    if errors != {}:
+        raise ValidationError(errors)
+    return params
+
+@schema
+class ErrorResponse:
+    message: str
+    status: int
+
+def populate_schema(schema, **kwargs):
+    for arg, val in kwargs.items():
+        schema.__FIELDS__[arg] = Field(
+            arg, 
+            schema.__FIELDS__[arg].annotation,
+            val
+        )
+    return schema
+
+def error_schema(message: str, status: int):
+    @schema
+    class ErrorResponse:
+        message: str
+        status: int
+    return populate_schema(ErrorResponse, message=message, status=status)
+
+
+    

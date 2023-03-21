@@ -1,6 +1,7 @@
 from urllib import parse
 import email
 import json
+from .schema import error_schema, validate_json, ErrorResponse, schema_to_json
 
 
 def parse_multipart(
@@ -260,6 +261,43 @@ class Response500(Response):
         self.body = "Internal Server Error"
         self.status = 500
 
+class Response404JSON(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "text/json"
+        self.body = str(
+                schema_to_json(error_schema("Not found", 404)),
+            )
+        self.status = 404
+
+
+class Response405JSON(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "text/json"
+        self.body = str(
+            schema_to_json(error_schema("Method is invalid", 405)),
+        )
+        self.status = 405
+
+
+class Response500JSON(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers["content-type"] = "text/json"
+        self.body = str(
+            schema_to_json(error_schema("Internal server error", 500))
+        )
+        self.status = 500
+
+class Response422JSON(Response):
+    def __init__(self):
+        super().__init__()
+        self.headers['content-type'] = 'text/json'
+        self.body = str(
+            schema_to_json(error_schema("Validation error", 422))
+        )
+        self.status = 422
 
 class Redirect(Response):
     """

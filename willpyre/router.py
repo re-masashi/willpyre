@@ -10,6 +10,10 @@ from .structure import (
     Response405,
     Response500,
     Response404,
+    Response422JSON,
+    Response404JSON,
+    Response500JSON,
+    Response404JSON,
     JSONResponse,
     HTMLResponse,
 )
@@ -257,8 +261,6 @@ class StaticRouter:
         except KeyError:
             resp = Response404()
             return resp
-        # Value: Response object (9/8/21).
-
 
 class Router(StaticRouter):
     """The Router class handles routing of URLs.
@@ -315,7 +317,7 @@ class Router(StaticRouter):
         for endpoint in router.endpoints:
             self.add_endpoint(router.endpoints[endpoint], endpoint)
 
-    async def handle(self, request, response) -> Response:
+    async def handle(self, request: Request, response: Response) -> Response:
         if request.path[-1] != "/":
             request.path += "/"
         try:
@@ -727,3 +729,37 @@ class OpenAPIRouter(Router):  # pragma: no cover
                 definitions=self.definitions_dict,
             )
         return self.openapi_schema
+
+    async def handle(self, request: Request, response: Response) -> Response:
+        if request.path[-1] != "/":
+            request.path += "/"
+        try:
+            if request.method == "HEAD":
+                response_routes = self.routes["GET"]
+            else:
+                response_routes = self.routes[request.method]
+        except KeyError:
+            # pdb.set_trace()
+            # Key errors occur on when no method is found on a route.
+            response_ = self.config.get("405Response", Response405JSON())
+            return response_
+        except Exception:
+            # Catches other errors.
+            self.config.get("logger_exception", print)(traceback.format_exc())
+            response_ = self.config.get("500Response", Response500JSON())  # noqa
+            return response_
+        try:
+            request.params, variablized_url = self.KuaRoutes.match(request.path)
+            response_ = await response_routes[variablized_url](request, response)
+            return response_
+        except KeyError:
+            response_ = self.config.get("404Response", Response404JSON())
+            return response_
+        except HTTPException:
+            response_ = self.config.get("422Response", Response422JSON())
+            return response_
+        except Exception:
+            # Catches other errors.
+            self.config.get("logger_exception", print)(traceback.format_exc())
+            response_ = self.config.get("500Response", Response500JSON())
+            return response_

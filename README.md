@@ -4,6 +4,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/willpyre/badge/?version=latest)](https://willpyre.readthedocs.io/en/latest/?badge=latest)
 [![Test and PEP8](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml/badge.svg)](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/re-masashi/willpyre)
 
 Willpyre is a micro ASGI framework. 
 Willpyre gives flexibility and control, but abstracts ASGI to some extent and adds reusability to your code.
