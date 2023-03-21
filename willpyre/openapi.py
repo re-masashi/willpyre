@@ -4,7 +4,7 @@ import json
 # TODO: Clean up the HTML part. Too messy.
 
 
-def get_swagger_ui_html( # pragma: no cover
+def get_swagger_ui_html(  # pragma: no cover
     openapi_url: str,
     title: str,
     swagger_js_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js",
@@ -13,14 +13,14 @@ def get_swagger_ui_html( # pragma: no cover
     oauth2_redirect_url=None,
     init_oauth=None,
     swagger_params=None,
-    swagger_presets: list = []
-) -> HTMLResponse: # pragma: no cover
+    swagger_presets: list = [],
+) -> HTMLResponse:  # pragma: no cover
     current_swagger_ui_parameters = {
         "dom_id": "#swagger-ui",
         "layout": "BaseLayout",
         "deepLinking": True,
         "showExtensions": True,
-        "showCommonExtensions": True
+        "showCommonExtensions": True,
     }
 
     if swagger_params:
@@ -56,14 +56,14 @@ def get_swagger_ui_html( # pragma: no cover
         SwaggerUIBundle.SwaggerUIStandalonePreset,
     """
     for preset in swagger_presets:
-        html += preset + ',\n'
+        html += preset + ",\n"
 
-    html += ''']
+    html += """]
     })
     </script>
     </body>
     </html>
-    '''
+    """
 
     if init_oauth:
         html += f"""
@@ -78,7 +78,7 @@ def get_swagger_ui_html( # pragma: no cover
     return HTMLResponse(html)
 
 
-def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse: # pragma: no cover
+def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse:  # pragma: no cover
     # https://github.com/swagger-api/swagger-ui/blob/v4.18.0/dist/oauth2-redirect.html
     html = """
     <!doctype html>
@@ -164,7 +164,7 @@ def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse: # pragma: no cover
     return HTMLResponse(content=html)
 
 
-def gen_openapi_schema( # pragma: no cover
+def gen_openapi_schema(  # pragma: no cover
     title,
     version,
     openapi_version,
@@ -177,8 +177,8 @@ def gen_openapi_schema( # pragma: no cover
     host,
     paths,
     definitions,
-    **kwargs
-) -> dict: # pragma: no cover
+    **kwargs,
+) -> dict:  # pragma: no cover
     schema = {}
     info = {
         "title": title,
@@ -198,23 +198,23 @@ def gen_openapi_schema( # pragma: no cover
     if host:
         schema["host"] = host
 
-    schema["swagger"] = '2.0'
+    schema["swagger"] = "2.0"
 
     schema["paths"] = paths
     schema["info"] = info
     schema["version"] = version
-    schema['definitions'] = definitions
-    
+    schema["definitions"] = definitions
+
     return schema
 
 
-def schema(cls): # pragma: no cover
-    '''
+def schema(cls):  # pragma: no cover
+    """
     Intended to be used as a decorator.
     @schema
     class Item:
         itemid: int
         name: str
         seller: Seller # another schema
-    '''
+    """
     pass

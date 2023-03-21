@@ -7,14 +7,14 @@ from . import router, app, structure
 __version__ = "0.0.7"
 
 __all__ = [
-    'JSONResponse',
-    'TextResponse',
-    'HTMLResponse',
-    'Router',
-    'OpenAPIRouter',
-    'APIRouter',  # just a shorter alias
-    'App',
-    'Redirect'
+    "JSONResponse",
+    "TextResponse",
+    "HTMLResponse",
+    "Router",
+    "OpenAPIRouter",
+    "APIRouter",  # just a shorter alias
+    "App",
+    "Redirect",
 ]
 
 Router = router.Router

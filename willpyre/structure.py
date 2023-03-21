@@ -3,7 +3,9 @@ import email
 import json
 
 
-def parse_multipart(content_type: str, data: bytes, decode: bool = False) -> list: # pragma: no cover
+def parse_multipart(
+    content_type: str, data: bytes, decode: bool = False
+) -> list:  # pragma: no cover
     post_data = f"""Content-Type: {content_type}
 
         {data.decode()}"""
@@ -12,19 +14,12 @@ def parse_multipart(content_type: str, data: bytes, decode: bool = False) -> lis
     body = TypedMultiMap({})
     if msg.is_multipart():
         for part in msg.get_payload():
-            print(name)
-            name = part.get_param(
-                'name', header='content-disposition')
-            filename = part.get_param(
-                'filename', header='content-disposition')
+            name = part.get_param("name", header="content-disposition")
+            filename = part.get_param("filename", header="content-disposition")
             payload = part.get_payload(decode=True)
             if filename is not None:
                 files[name] = FileObject(
-                    {
-                        "name": name,
-                        "content": payload.decode(),
-                        "filename": filename
-                    }
+                    {"name": name, "content": payload.decode(), "filename": filename}
                 )
             else:
                 body[name] = payload
@@ -32,7 +27,6 @@ def parse_multipart(content_type: str, data: bytes, decode: bool = False) -> lis
 
 
 class TypedMultiMap(dict):
-
     def __init__(self, mapping=None):
         if isinstance(mapping, TypedMultiMap):
             dict.__init__(self, ((k, l[:]) for k, l in mapping.lists()))
@@ -133,10 +127,10 @@ class TypedMultiMap(dict):
         return default
 
     def items(self, multi=False):
-        '''
+        """
         Args:
             multi: When set to ``True``, you get a list. Else, a value.
-        '''
+        """
         for key, values in dict.items(self):
             if multi:
                 for value in values:
@@ -146,7 +140,7 @@ class TypedMultiMap(dict):
 
 
 class Response:
-    '''
+    """
 
 
     This class contains the Response data to be sent,
@@ -164,25 +158,26 @@ class Response:
       body(str)
       status(int)
 
-    '''
+    """
 
     def __init__(
-            self,
-            status=200,
-            content_type="text/html",
-            body='',
-            headers=TypedMultiMap({}),
-            cookies=dict()):
+        self,
+        status=200,
+        content_type="text/html",
+        body="",
+        headers=TypedMultiMap({}),
+        cookies=dict(),
+    ):
         self.headers = headers
         self.cookies = cookies
         self.content_type = content_type
-        self.headers['content-type'] = self.content_type
+        self.headers["content-type"] = self.content_type
         self.body = body
         self.status = status
 
 
 class Request:
-    '''
+    """
 
 
     This class contains the information requested by the user.
@@ -195,12 +190,14 @@ class Request:
       query(dict[str,list[str]]): It is obtained from the server as a string and is then parsed into the dictionary with `urllib.parse.parse_qs`
 
 
-    '''
+    """
+
     params, cookies = {}, {}
 
-    def __init__(self, method: str, path: str, raw_body: bytes,
-                 raw_query: bytes, headers, *args):
-        '''
+    def __init__(
+        self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args
+    ):
+        """
 
         Args:
           self: The class ``maglev.structure.Request``
@@ -210,15 +207,13 @@ class Request:
           query(str): The ``GET`` query string, obtained from ASGI scope of send.
           body(str): The HTTP request body.
 
-        '''
+        """
         self.headers = TypedMultiMap({})
         self.method = method
         self.path = path
         self.raw_query = raw_query
         self.raw_body = raw_body
-        self.query = TypedMultiMap(
-            parse.parse_qs(raw_query.decode())
-        )
+        self.query = TypedMultiMap(parse.parse_qs(raw_query.decode()))
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
 
@@ -228,33 +223,32 @@ class Request:
 
         if content_type.startswith("multipart/form-data"):
             self.body, self.files = parse_multipart(
-                self.headers.get("content-type"),
-                self.raw_body
+                self.headers.get("content-type"), self.raw_body
             )
             # print(self.files)
         else:
-            self.body = TypedMultiMap(
-                parse.parse_qs(raw_body.decode())
-            )
+            self.body = TypedMultiMap(parse.parse_qs(raw_body.decode()))
             self.files = TypedMultiMap({})
 
-        if 'cookie' in self.headers.keys():
-            [self.cookies.update({_.split('=')[0]:_.split('=')[1]})
-             for _ in self.headers['cookie'].split(';')]
+        if "cookie" in self.headers.keys():
+            [
+                self.cookies.update({_.split("=")[0]: _.split("=")[1]})
+                for _ in self.headers["cookie"].split(";")
+            ]
 
 
 class Response404(Response):
     def __init__(self):
         super().__init__()
-        self.headers['content-type'] = 'text/html'
-        self.body = 'Not found'
+        self.headers["content-type"] = "text/html"
+        self.body = "Not found"
         self.status = 404
 
 
 class Response405(Response):
     def __init__(self):
         super().__init__()
-        self.headers['content-type'] = 'text/html'
+        self.headers["content-type"] = "text/html"
         self.body = "Method not allowed"
         self.status = 405
 
@@ -262,29 +256,31 @@ class Response405(Response):
 class Response500(Response):
     def __init__(self):
         super().__init__()
-        self.headers['content-type'] = 'text/html'
+        self.headers["content-type"] = "text/html"
         self.body = "Internal Server Error"
         self.status = 500
 
 
 class Redirect(Response):
-    '''
+    """
     Sends a redirect response to the user.
     Args:
     - location(str): Path to send the user after redirect.
     - status(int): The HTTP status during redirect. Defaults to 303.
     (More about redirects)[https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections]
-    '''
+    """
 
     def __init__(self, location: str, status: int = 303):
         super().__init__()
         self.body = "Redirecting to " + location
-        self.status = status  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections
+        self.status = (
+            status  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections
+        )
         self.headers["location"] = location
 
 
 class Cookie:
-    '''
+    """
     This class is used to send cookies to the user.
 
     Args:
@@ -302,19 +298,19 @@ class Cookie:
         Attackers cannot steal cookies from users through Cross-Site scripting if it is set.
         However, it requires an HTTPS connection, so you can disable it during development.
 
-    '''
+    """
 
-    __slots__ = ('value', 'max_age', 'cookie_str',
-                 'same_site', 'secure', 'http_only')
+    __slots__ = ("value", "max_age", "cookie_str", "same_site", "secure", "http_only")
 
     def __init__(
-            self,
-            value: str,
-            max_age: int = 0,
-            same_site: str = "Lax",
-            secure: bool = True,
-            http_only: bool = True):
-        '''
+        self,
+        value: str,
+        max_age: int = 0,
+        same_site: str = "Lax",
+        secure: bool = True,
+        http_only: bool = True,
+    ):
+        """
 
         Args:
             value(str): The value of cookie.
@@ -323,18 +319,23 @@ class Cookie:
             secure(bool): Is the cookie a secure cookie or not. Defaults to True
             http_only(bool): States if the cookie is HttpOnly cookie.
 
-        '''
+        """
         self.value = value.encode()
         self.max_age = str(max_age).encode()
         self.same_site = same_site.encode()
         self.secure = secure
         self.http_only = http_only
-        self.cookie_str = self.value + b'; Max-Age=' + \
-            self.max_age + b'; SameSite=' + same_site.encode()
+        self.cookie_str = (
+            self.value
+            + b"; Max-Age="
+            + self.max_age
+            + b"; SameSite="
+            + same_site.encode()
+        )
         if secure is True:
-            self.cookie_str += b'; Secure'
+            self.cookie_str += b"; Secure"
         if http_only is True:
-            self.cookie_str += b'; HttpOnly'
+            self.cookie_str += b"; HttpOnly"
 
 
 class FileObject:
@@ -349,10 +350,7 @@ class FileObject:
 
 class HTTPException(Exception, Response):
     def __init__(
-            self,
-            status: int = 404,
-            body: str = "Not found",
-            content_type="text/html"
+        self, status: int = 404, body: str = "Not found", content_type="text/html"
     ):
         # Do not use super() here. Makes a mess of multiple inheritances.
         Response.__init__(self)
@@ -363,38 +361,44 @@ class HTTPException(Exception, Response):
 
 class JSONResponse(Response):
     def __init__(
-            self,
-            data,
-            status=200,
-            content_type="application/json",
-            headers=TypedMultiMap({}),
-            cookies=dict()):
-        super().__init__(headers=headers, cookies=cookies,
-                         content_type=content_type, status=status)
+        self,
+        data,
+        status=200,
+        content_type="application/json",
+        headers=TypedMultiMap({}),
+        cookies=dict(),
+    ):
+        super().__init__(
+            headers=headers, cookies=cookies, content_type=content_type, status=status
+        )
         self.body = json.dumps(data)
 
 
 class TextResponse(Response):
     def __init__(
-            self,
-            data,
-            status=200,
-            content_type="text/plain",
-            headers=TypedMultiMap({}),
-            cookies=dict()):
-        super().__init__(headers=headers, cookies=cookies,
-                         content_type=content_type, status=status)
+        self,
+        data,
+        status=200,
+        content_type="text/plain",
+        headers=TypedMultiMap({}),
+        cookies=dict(),
+    ):
+        super().__init__(
+            headers=headers, cookies=cookies, content_type=content_type, status=status
+        )
         self.body = data
 
 
 class HTMLResponse(Response):
     def __init__(
-            self,
-            data,
-            status=200,
-            content_type="text/html",
-            headers=TypedMultiMap({}),
-            cookies=dict()):
-        super().__init__(headers=headers, cookies=cookies,
-                         content_type=content_type, status=status)
+        self,
+        data,
+        status=200,
+        content_type="text/html",
+        headers=TypedMultiMap({}),
+        cookies=dict(),
+    ):
+        super().__init__(
+            headers=headers, cookies=cookies, content_type=content_type, status=status
+        )
         self.body = data

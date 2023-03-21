@@ -7,5 +7,11 @@ name = "willpyre"
 authors = [{name = "Nafi Amaan Hossain"}]
 readme = "README.md"
 license = {file = "LICENSE"}
-classifiers = ["License :: OSI Approved :: MIT License"]
+classifiers = [
+	"License :: OSI Approved :: MIT License",
+	"Programming Language :: Python :: 3.7",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Programming Language :: Python :: 3.10",
+]
 dynamic = ["version", "description"]

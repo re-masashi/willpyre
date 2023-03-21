@@ -5,7 +5,6 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_willpyre_app():
-
     async with TestClient(main) as client:
         resp = await client.get("/")
         assert resp.status_code == 200
@@ -14,7 +13,6 @@ async def test_willpyre_app():
 
 @pytest.mark.asyncio
 async def test_willpyre_post():
-
     async with TestClient(main) as client:
         resp = await client.post("/login/", data="a=anything")
         assert resp.status_code == 200
@@ -23,7 +21,6 @@ async def test_willpyre_post():
 
 @pytest.mark.asyncio
 async def test_willpyre_get():
-
     async with TestClient(main) as client:
         resp = await client.get("/login/?user=admin")
         assert resp.status_code == 200
@@ -32,7 +29,6 @@ async def test_willpyre_get():
 
 @pytest.mark.asyncio
 async def test_trailing_slash():
-
     async with TestClient(main) as client:
         resp = await client.get("/login")
         assert resp.status_code == 200
@@ -41,7 +37,6 @@ async def test_trailing_slash():
 
 @pytest.mark.asyncio
 async def test_url_vars():
-
     async with TestClient(main) as client:
         resp = await client.get("/api/123")
         assert resp.status_code == 200
@@ -52,7 +47,6 @@ async def test_url_vars():
 
 @pytest.mark.asyncio
 async def test_url_many():
-
     async with TestClient(main) as client:
         resp = await client.get("/static/foo/bar/baz")
         assert resp.status_code == 200
@@ -61,10 +55,9 @@ async def test_url_many():
 
 @pytest.mark.asyncio
 async def test_utils():
-
     async with TestClient(main) as client:
         resp = await client.get("/json")
-        assert resp.json() == {'a': 'b'}
+        assert resp.json() == {"a": "b"}
         assert resp.headers["Content-Type"] == "application/json"
 
 
@@ -86,7 +79,6 @@ async def test_response405():
 
 @pytest.mark.asyncio
 async def test_put():
-
     async with TestClient(main) as client:
         resp = await client.put("/others")
         assert resp.text == "others"
@@ -94,7 +86,6 @@ async def test_put():
 
 @pytest.mark.asyncio
 async def test_patch():
-
     async with TestClient(main) as client:
         resp = await client.patch("/others")
         assert resp.text == "others"

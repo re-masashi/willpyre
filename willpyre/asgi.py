@@ -1,5 +1,4 @@
 from . import structure
-import asyncio
 
 
 class ASGI:
@@ -9,7 +8,7 @@ class ASGI:
     async def __call__(self, scope, receive, send):
         # HTTP
         if scope["type"] == "http":
-            body = await self._recieve(receive, scope["method"], b'')
+            body = await self._recieve(receive, scope["method"], b"")
 
             response_ = await self.app.router.handle(
                 structure.Request(
@@ -17,74 +16,79 @@ class ASGI:
                     path=scope["path"],
                     headers=scope["headers"],
                     raw_query=scope["query_string"],
-                    raw_body=body
+                    raw_body=body,
                 ),
-                self.app.response
+                self.app.response,
             )
 
             if response_.cookies is not dict():
                 response_cookies = [
                     [
-                        b'Set-Cookie',
-                        cookie_.encode() + b'=' +
-                        response_.cookies[cookie_].cookie_str
+                        b"Set-Cookie",
+                        cookie_.encode() + b"=" + response_.cookies[cookie_].cookie_str,
                     ]
-                    for cookie_ in response_.cookies.keys()]
+                    for cookie_ in response_.cookies.keys()
+                ]
             else:
                 response_cookies = []
 
             await self._send(send, response_, response_cookies)
 
-           # End HTTP
-           # lifespan
+        # End HTTP
+        # lifespan
         elif scope["type"] == "lifespan":
             while True:
                 message = await receive()
-                if message['type'] == 'lifespan.startup':
+                if message["type"] == "lifespan.startup":
                     self.app.config["startup"]()
-                    await send({'type': 'lifespan.startup.complete'})
-                elif message['type'] == 'lifespan.shutdown':
+                    await send({"type": "lifespan.startup.complete"})
+                elif message["type"] == "lifespan.shutdown":
                     self.app.config["shutdown"]()
-                    await send({'type': 'lifespan.shutdown.complete'})
+                    await send({"type": "lifespan.shutdown.complete"})
                     return
-           # End lifespan
-           # WebSocket
-               # Not implemented yet.
-           # End WebSocket
+        # End lifespan
+        # WebSocket
+        # Not implemented yet.
+        # End WebSocket
 
     async def _recieve(self, receive, method: str, body: bytes) -> None:
-        '''
+        """
         Get the data in HTTP body as in POST and other bodied methods.
-        '''
+        """
         if method not in self.app.router.bodied_methods:
-            return b''
+            return b""
         more_body = True
         while more_body:
             message = await receive()
             if message["type"] == "http.disconnect":
                 break
             if message["type"] == "http.request":
-                body += message.get("body", b'')
+                body += message.get("body", b"")
                 more_body = message.get("more_body", False)
             else:
-                raise RuntimeError(
-                    f"Unhandled message type: {message['type']}")
+                raise RuntimeError(f"Unhandled message type: {message['type']}")
         return body
 
     async def _send(self, send, response: structure.Response, cookies: list) -> None:
-        '''
+        """
         Send HTTP body.
-        '''
-        await send({
-            'type': 'http.response.start',
-            'status': response.status,
-            'headers': [
-                [value.encode() for value in header_pair] for header_pair in list(response.headers.items())
-            ] + cookies
-        })
+        """
+        await send(
+            {
+                "type": "http.response.start",
+                "status": response.status,
+                "headers": [
+                    [value.encode() for value in header_pair]
+                    for header_pair in list(response.headers.items())
+                ]
+                + cookies,
+            }
+        )
 
-        await send({
-            'type': 'http.response.body',
-            'body': response.body.encode(),
-            'more_body': False
-        })
+        await send(
+            {
+                "type": "http.response.body",
+                "body": response.body.encode(),
+                "more_body": False,
+            }
+        )
