@@ -14,6 +14,7 @@ from .structure import (
     JSONResponse,
     HTMLResponse
 )
+from .schema import schema_repr
 from .openapi import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
@@ -357,7 +358,7 @@ class OpenAPIRouter(Router): # pragma: no cover
         dependencies=None,
         swagger_params=None,
         swagger_favicon: str = "/favicon.ico",
-        definitions: dict = {},
+        definitions: dict = [ ],
         license=None,
         contact=None,
         host=None
@@ -384,10 +385,19 @@ class OpenAPIRouter(Router): # pragma: no cover
         self.openapi_schema = {}
 
         super().__init__(endpoint_prefix)
+        definitions_dict = {}
+        for model in definitions:
+            defn = {
+                'type':'object'
+            }
+            name = model.__name__
+            defn['properties'] = schema_repr(model)
+            definitions_dict[name] = defn
+        self.definitions_dict = definitions_dict
 
         # Init done. Post-init stuff here
 
-        if self.openapi_url is not None:
+        if self.openapi_url:
 
             async def openapi(req: Request, res: Response) -> JSONResponse:
                 return JSONResponse(self.openapi())
@@ -457,6 +467,7 @@ class OpenAPIRouter(Router): # pragma: no cover
         path_parameters=[],
         auto_path_parameters=True,
         no_docs: bool = False,
+        **kwargs
     ):
 
         Router.add_route(self, path, method, handler)
@@ -467,16 +478,15 @@ class OpenAPIRouter(Router): # pragma: no cover
         path_ = path
 
         match = re.search(r'/:[^/]+', path_)
-        i = 0
 
         while match: # match becomes None when there are no more occurences
             var = match.group()[2:]
             path_ = path_[:match.span()[0]] + '/{' + var + '}/'
+            
             if '|' not in var:
                 var += '|str'
 
             var, validation = var.split('|')
-            match = re.search(r'/:[^/]+', path_)
                         
             params = [{
                     "name": var,
@@ -484,10 +494,14 @@ class OpenAPIRouter(Router): # pragma: no cover
                     "type": validation,
                     "in": "path"
                 }]
-            
-            i += 1
+            match = re.search(r'/:[^/]+', path_)
+
             if auto_path_parameters:
                 path_parameters += params
+
+        description = handler.__doc__
+
+
 
         self.paths[path_]={}
         self.paths[path_][method.lower()] = {
@@ -497,9 +511,12 @@ class OpenAPIRouter(Router): # pragma: no cover
             "produces": produces,
             "parameters": path_parameters,
             "responses": responses,
-            "security": security
-        } 
+            "description": description,
+            "security": security,
+        }
 
+        if response_model:
+            self.paths[path_][method.lower()]['schema'] = {'$ref': '#/definitions/'+response_model.__name__}
 
     def add_api_route(
         self,
@@ -557,6 +574,7 @@ class OpenAPIRouter(Router): # pragma: no cover
                 tags=self.tags,
                 contact=self.contact,
                 host=self.host,
-                paths=self.paths
+                paths=self.paths,
+                definitions=self.definitions_dict
             )
         return self.openapi_schema

@@ -176,6 +176,8 @@ def gen_openapi_schema( # pragma: no cover
     tags,
     host,
     paths,
+    definitions,
+    **kwargs
 ) -> dict: # pragma: no cover
     schema = {}
     info = {
@@ -196,13 +198,13 @@ def gen_openapi_schema( # pragma: no cover
     if host:
         schema["host"] = host
 
-    schema["openapi"] = openapi_version
-
+    schema["swagger"] = '2.0'
 
     schema["paths"] = paths
     schema["info"] = info
     schema["version"] = version
-
+    schema['definitions'] = definitions
+    
     return schema
 
 
