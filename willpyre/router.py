@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Any, Callable, Dict, List
 from copy import deepcopy
 import traceback
 import re
@@ -8,6 +8,7 @@ from .structure import (
     Request,
     Response,
     Response405,
+    Response405JSON,
     Response500,
     Response404,
     Response422JSON,
@@ -262,6 +263,7 @@ class StaticRouter:
             resp = Response404()
             return resp
 
+
 class Router(StaticRouter):
     """The Router class handles routing of URLs.
     You need to give an endpoint prefix if you are embedding it."""
@@ -381,7 +383,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         dependencies=None,
         swagger_params=None,
         swagger_favicon: str = "/favicon.ico",
-        definitions: dict = [],
+        definitions: List[Any] = [],
         license=None,
         contact=None,
         host=None,
@@ -409,7 +411,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         super().__init__(endpoint_prefix)
         definitions_dict = {}
         for model in definitions:
-            defn = {"type": "object"}
+            defn: Dict[str, Any] = {"type": "object"}
             name = model.__name__
             defn["properties"] = schema_repr(model)
             definitions_dict[name] = defn

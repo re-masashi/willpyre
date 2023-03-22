@@ -1,36 +1,13 @@
+from typing import Any, Tuple, Union
 from urllib import parse
 import email
 import json
 from .schema import error_schema, validate_json, ErrorResponse, schema_to_json
 
-
-def parse_multipart(
-    content_type: str, data: bytes, decode: bool = False
-) -> list:  # pragma: no cover
-    post_data = f"""Content-Type: {content_type}
-
-        {data.decode()}"""
-    msg = email.message_from_string(post_data)
-    files = TypedMultiMap({})
-    body = TypedMultiMap({})
-    if msg.is_multipart():
-        for part in msg.get_payload():
-            name = part.get_param("name", header="content-disposition")
-            filename = part.get_param("filename", header="content-disposition")
-            payload = part.get_payload(decode=True)
-            if filename is not None:
-                files[name] = FileObject(
-                    {"name": name, "content": payload.decode(), "filename": filename}
-                )
-            else:
-                body[name] = payload
-    return body, files
-
-
 class TypedMultiMap(dict):
-    def __init__(self, mapping=None):
+    def __init__(self, mapping:Union[Any, None]=None):
         if isinstance(mapping, TypedMultiMap):
-            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists()))
+            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists())) # type: ignore
         elif isinstance(mapping, dict):
             temp = dict()
             for key, value in mapping.items():
@@ -79,7 +56,7 @@ class TypedMultiMap(dict):
         """
         Inserts a key for the value given.
         """
-        dict.setdefault(self, key, []).append(value)
+        dict.setdefault(self, key, []).append(value) # type: ignore
 
     def to_dict(self, flat=True):
         """
@@ -92,9 +69,9 @@ class TypedMultiMap(dict):
 
         if flat:
             return dict(self.items())
-        return dict(self.lists())
+        return dict(self.lists()) # type: ignore
 
-    def get_all(self, key, type_=None):
+    def get_all(self, key, type_:Any=None):
         """
         Fetches the list of all the items present.
         """
@@ -138,6 +115,31 @@ class TypedMultiMap(dict):
                     yield key, value
             else:
                 yield key, values[0]
+
+
+def parse_multipart(
+    content_type: str, data: bytes, decode: bool = False
+) -> Tuple[TypedMultiMap, TypedMultiMap]:  # pragma: no cover
+    post_data = f"""Content-Type: {content_type}
+
+        {data.decode()}"""
+    msg = email.message_from_string(post_data)
+    files = TypedMultiMap({})
+    body = TypedMultiMap({})
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            name = part.get_param("name", header="content-disposition")
+            filename = part.get_param("filename", header="content-disposition")
+            payload = part.get_payload(decode=True)
+            if filename is not None:
+                files[name] = FileObject(
+                    {"name": name, "content": payload.decode(), "filename": filename}
+                )
+            else:
+                body[name] = payload
+    return body, files
+
+
 
 
 class Response:
@@ -196,7 +198,7 @@ class Request:
     params, cookies = {}, {}
 
     def __init__(
-        self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args
+        self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args,
     ):
         """
 
@@ -220,11 +222,11 @@ class Request:
 
         # print("head", self.headers)
         content_type = self.headers.get("content-type", default="")
-        self.content_type = content_type
+        self.content_type: str = content_type
 
         if content_type.startswith("multipart/form-data"):
             self.body, self.files = parse_multipart(
-                self.headers.get("content-type"), self.raw_body
+                content_type, self.raw_body
             )
             # print(self.files)
         else:
@@ -234,7 +236,7 @@ class Request:
         if "cookie" in self.headers.keys():
             [
                 self.cookies.update({_.split("=")[0]: _.split("=")[1]})
-                for _ in self.headers["cookie"].split(";")
+                for _ in self.headers["cookie"].split(";") # type: ignore
             ]
 
 
@@ -261,13 +263,14 @@ class Response500(Response):
         self.body = "Internal Server Error"
         self.status = 500
 
+
 class Response404JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
         self.body = str(
-                schema_to_json(error_schema("Not found", 404)),
-            )
+            schema_to_json(error_schema("Not found", 404)),
+        )
         self.status = 404
 
 
@@ -285,19 +288,17 @@ class Response500JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
-        self.body = str(
-            schema_to_json(error_schema("Internal server error", 500))
-        )
+        self.body = str(schema_to_json(error_schema("Internal server error", 500)))
         self.status = 500
+
 
 class Response422JSON(Response):
     def __init__(self):
         super().__init__()
-        self.headers['content-type'] = 'text/json'
-        self.body = str(
-            schema_to_json(error_schema("Validation error", 422))
-        )
+        self.headers["content-type"] = "text/json"
+        self.body = str(schema_to_json(error_schema("Validation error", 422)))
         self.status = 422
+
 
 class Redirect(Response):
     """

@@ -108,6 +108,7 @@ def schema(cls):
     setattr(cls, "__FIELDS__", fields)
     return cls
 
+
 def _match_type(annotation, value):
     if annotation is str:
         if type(value) is str:
@@ -132,7 +133,7 @@ def _match_type(annotation, value):
             )
 
     if isinstance(annotation, Constr):
-        if type(value) is str and value >= annotation.min and value <= annotation.max:
+        if type(value) is str and len(value) >= annotation.min and len(value) <= annotation.max:
             return value
         else:
             raise ValidationError("Wrong type.")
@@ -151,6 +152,7 @@ def _match_type(annotation, value):
 
     raise NotImplementedError(f"Annotation {annotation} not implemented")
 
+
 def _validate(field, value):
     if value is Missing:
         if field.default is not Missing:
@@ -158,6 +160,7 @@ def _validate(field, value):
         raise ValidationError("this field is required")
 
     return _match_type(field.annotation, value)
+
 
 def validate_json(schema, data: dict):
     """Validate the given data dictionary against a schema and
@@ -172,24 +175,24 @@ def validate_json(schema, data: dict):
         raise TypeError(f"{schema} is not a valid schema")
 
     errors, params = {}, {}
-    for field in schema.__FIELDS__.values():
+    for field in schema.__FIELDS__.values(): # type: ignore
         try:
             value = data.get(field.name, Missing)
             params[field.name] = _validate(field, value)
         except ValidationError as e:
-            errors[field.name] = "error"
+            errors[field.name] = str(e)
 
     if errors != {}:
         raise ValidationError(errors)
 
+
 def schema_repr(schema):
-    """
-    """
+    """ """
     if not (isinstance(schema, type) and hasattr(schema, "__FIELDS__")):
         raise TypeError(f"{schema} is not a valid schema")
 
     params = {}
-    for field in schema.__FIELDS__.values():
+    for field in schema.__FIELDS__.values(): # type: ignore
         if field.annotation is int:
             annotation = "integer"
         elif field.annotation is float:
@@ -209,16 +212,17 @@ def schema_repr(schema):
 
     return params
 
+
 def schema_to_json(schema):
     if not (isinstance(schema, type) and hasattr(schema, "__FIELDS__")):
         raise TypeError(f"{schema} is not a valid schema")
-    
+
     errors, params = {}, {}
-    for field in schema.__FIELDS__.values():
+    for field in schema.__FIELDS__.values(): # type: ignore
         try:
             value = field.default
             if value is Missing:
-                raise ValueError('Value cannot be unpopulated.')
+                raise ValueError("Value cannot be unpopulated.")
             params[field.name] = _validate(field, value)
         except ValidationError as e:
             errors[field.name] = "error"
@@ -227,26 +231,23 @@ def schema_to_json(schema):
         raise ValidationError(errors)
     return params
 
+
 @schema
 class ErrorResponse:
     message: str
     status: int
 
+
 def populate_schema(schema, **kwargs):
     for arg, val in kwargs.items():
-        schema.__FIELDS__[arg] = Field(
-            arg, 
-            schema.__FIELDS__[arg].annotation,
-            val
-        )
+        schema.__FIELDS__[arg] = Field(arg, schema.__FIELDS__[arg].annotation, val)
     return schema
+
 
 def error_schema(message: str, status: int):
     @schema
     class ErrorResponse:
         message: str
         status: int
+
     return populate_schema(ErrorResponse, message=message, status=status)
-
-
-    

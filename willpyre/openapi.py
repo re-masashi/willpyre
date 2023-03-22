@@ -161,7 +161,7 @@ def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse:  # pragma: no cover
     </body>
     </html>
     """
-    return HTMLResponse(content=html)
+    return HTMLResponse(data=html)
 
 
 def gen_openapi_schema(  # pragma: no cover

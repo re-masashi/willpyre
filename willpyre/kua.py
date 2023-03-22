@@ -4,7 +4,7 @@ import re
 import urllib.parse
 import collections
 from functools import lru_cache
-from typing import Tuple, List, Sequence, Dict, Union, Callable, Iterator
+from typing import Any, Tuple, List, Sequence, Dict, Union, Callable, Iterator
 from .structure import HTTPException
 
 __all__ = ["Routes", "RouteResolved"]
@@ -14,6 +14,17 @@ WrappedVariablePartsType = Tuple[tuple, Tuple[str, str]]
 VariablePartsType = Tuple[Union[str, Tuple[str]]]
 VariablePartsIterType = Iterator[Union[str, Tuple[str]]]
 ValidateType = Dict[str, Callable[[str], bool]]
+
+RouteResolved = collections.namedtuple("RouteResolved", ["params"])
+RouteResolved.__doc__ = """
+    Resolved route
+
+    :param dict params: Pattern variables\
+    to URL parts
+    :param object anything: Literally anything.\
+    This is attached to the URL pattern when\
+    registering it
+    """
 
 
 def depth_of(parts: Sequence[str]) -> int:
@@ -96,7 +107,7 @@ def unwrap(variable_parts: WrappedVariablePartsType) -> VariablePartsType:
 
 def make_params(
     key_parts: Sequence[str], variable_parts: VariablePartsIterType
-) -> Dict[str, Union[str, Tuple[str]]]:
+)->Dict:
     """
     Map keys to variables. This map\
     URL-pattern variables to\
@@ -112,12 +123,9 @@ def make_params(
     return dict(zip(key_parts, variable_parts))
 
 
-_SAFE_COMPONENT = re.compile(r"[ \w\-_.]+")
-
-
 def validate(
     key_parts: Sequence[str],
-    variable_parts: VariablePartsIterType,
+    variable_parts,
     params_validate: dict,
     validation_dict: dict,
 ) -> bool:
@@ -157,22 +165,9 @@ def _route(key_parts: Sequence, validate: ValidateType) -> _Route:
     return _Route(key_parts=key_parts, validate=validate)
 
 
-# DO NOT RELEASE, PORT IT FIRST.
-RouteResolved = collections.namedtuple("RouteResolved", ["params"])
-RouteResolved.__doc__ = """
-    Resolved route
-
-    :param dict params: Pattern variables\
-    to URL parts
-    :param object anything: Literally anything.\
-    This is attached to the URL pattern when\
-    registering it
-    """
-
-
 def _resolve(
-    variable_parts: VariablePartsType, routes: Sequence[_Route], validation_dict: dict
-) -> Union[RouteResolved, None]:
+    variable_parts, routes: Sequence[_Route], validation_dict: dict
+) -> Any:
     for route in routes:
         if validate(route.key_parts, variable_parts, route.validate, validation_dict):
             return make_params(key_parts=route.key_parts, variable_parts=variable_parts)
@@ -276,7 +271,7 @@ class Routes:
 
         return parts
 
-    def _match(self, parts: Sequence[str]) -> dict:
+    def _match(self, parts: Sequence[str]) -> RouteResolved:
         """
         Match URL parts to a registered pattern.
 
@@ -322,14 +317,14 @@ class Routes:
                     (
                         {self._VAR_ANY_NODE: curr[self._VAR_ANY_NODE]},
                         (curr_variable_parts, (self._VAR_ANY_NODE, part)),
-                        depth + 1,
+                        depth + 1, # type: ignore
                     )
                 )
                 to_visit.append(
                     (
                         curr[self._VAR_ANY_NODE],
                         (curr_variable_parts, (self._VAR_ANY_BREAK, part)),
-                        depth + 1,
+                        depth + 1, #type: ignore
                     )
                 )
 
@@ -338,17 +333,17 @@ class Routes:
                     (
                         curr[self._VAR_NODE],
                         (curr_variable_parts, (self._VAR_NODE, part)),
-                        depth + 1,
+                        depth + 1, #type: ignore
                     )
                 )
 
             if part in curr:
-                to_visit.append((curr[part], curr_variable_parts, depth + 1))
+                to_visit.append((curr[part], curr_variable_parts, depth + 1)) # type: ignore
 
         raise HTTPException()
 
     @lru_cache(maxsize=512)
-    def match(self, url: str) -> dict:
+    def match(self, url: str) -> Any:
         """
         Match a URL to a registered pattern.
 
@@ -367,7 +362,7 @@ class Routes:
 
         route_match = self._match(parts)
         for param in list(route_match.keys()):
-            route_param = route_match[param]
+            route_param: Union[Tuple, str] = route_match[param] # type: ignore
             if isinstance(route_param, str):
                 original_url = original_url.replace(route_param, param, 1)
             else:  # param is a list
@@ -380,7 +375,7 @@ class Routes:
 
         return route_match, original_url
 
-    def add(self, url: str) -> None:
+    def add(self, url: str) -> Any:
         """
         Register a URL pattern into\
         the routes for later matching.

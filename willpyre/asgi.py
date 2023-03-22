@@ -51,7 +51,7 @@ class ASGI:
         # Not implemented yet.
         # End WebSocket
 
-    async def _recieve(self, receive, method: str, body: bytes) -> None:
+    async def _recieve(self, receive, method: str, body: bytes) ->bytes:
         """
         Get the data in HTTP body as in POST and other bodied methods.
         """
