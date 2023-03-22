@@ -6,6 +6,7 @@ import collections
 from functools import lru_cache
 from typing import Any, Tuple, List, Sequence, Dict, Union, Callable, Iterator
 from .structure import HTTPException
+from .schema import ValidationError
 
 __all__ = ["Routes", "RouteResolved"]
 
@@ -170,6 +171,7 @@ def _resolve(variable_parts, routes: Sequence[_Route], validation_dict: dict) ->
         if validate(route.key_parts, variable_parts, route.validate, validation_dict):
             return make_params(key_parts=route.key_parts, variable_parts=variable_parts)
 
+        raise ValidationError("Invalid param type.")
     return None
 
 
@@ -298,7 +300,6 @@ class Routes:
             except IndexError:
                 if self._ROUTE_NODE not in curr:
                     continue
-
                 route_resolved = _resolve(
                     variable_parts=unwrap(curr_variable_parts),
                     routes=curr[self._ROUTE_NODE],
@@ -359,6 +360,7 @@ class Routes:
             parts = decode_parts(parts)
 
         route_match = self._match(parts)
+
         for param in list(route_match.keys()):
             route_param: Union[Tuple, str] = route_match[param]  # type: ignore
             if isinstance(route_param, str):

@@ -18,7 +18,7 @@ from .structure import (
     JSONResponse,
     HTMLResponse,
 )
-from .schema import schema_repr
+from .schema import schema_repr, ValidationError
 from .openapi import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
@@ -299,6 +299,7 @@ class Router(StaticRouter):
             mount_at = mount_at[1:]
         if mount_at[-1] == "/":
             mount_at = mount_at[:-1]
+        router.endpoint_prefix = mount_at
         if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
             self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
 
@@ -318,6 +319,13 @@ class Router(StaticRouter):
         ]
         for endpoint in router.endpoints:
             self.add_endpoint(router.endpoints[endpoint], endpoint)
+        try:
+            paths = {}
+            for path, methods in router.paths.items():
+                paths["/" + mount_at + path] = methods
+            router.paths = paths
+        except AttributeError:
+            pass
 
     async def handle(self, request: Request, response: Response) -> Response:
         if request.path[-1] != "/":
@@ -341,10 +349,7 @@ class Router(StaticRouter):
             request.params, variablized_url = self.KuaRoutes.match(request.path)
             response_ = await response_routes[variablized_url](request, response)
             return response_
-        except KeyError:
-            response_ = self.config.get("404Response", Response404())
-            return response_
-        except HTTPException:
+        except (HTTPException, ValidationError, KeyError) as e:
             response_ = self.config.get("404Response", Response404())
             return response_
         except Exception:
@@ -374,7 +379,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         version: str = "0.0.1",
         endpoint_prefix: str = "",
         openapi_url: str = "/openapi.json",
-        oauth_redirect_url: str = "/docs/openapi-rediect",
+        oauth_redirect_url: str = "/openapi-rediect",
         tos_url: str = "/terms-of-service",
         openapi_version: str = "3.0.0",
         title: str = "",
@@ -391,7 +396,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         self.openapi_url = openapi_url
         self.version = version
         self.oauth2_redirect_url = oauth_redirect_url
-        self.tos_url = tos_url
+        self.tos_url = endpoint_prefix + tos_url
         self.openapi_version = openapi_version
         self.title = title
         self.tags = tags
@@ -405,6 +410,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         self.description = description
         self.contact = contact
         self.host = host
+        self.endpoint_prefix = endpoint_prefix
 
         self.openapi_schema = {}
 
@@ -427,15 +433,15 @@ class OpenAPIRouter(Router):  # pragma: no cover
             self.add_route(self.openapi_url, "GET", openapi, no_docs=True)
 
         async def swagger_ui_html(req: Request, res: Response) -> HTMLResponse:
-            self.openapi_url
-            oauth2_redirect_url = self.oauth2_redirect_url
+            openapi_url = self.endpoint_prefix + self.openapi_url
+            oauth2_redirect_url = self.endpoint_prefix + self.oauth2_redirect_url
             if oauth2_redirect_url:
-                oauth2_redirect_url = oauth_redirect_url
+                oauth2_redirect_url = self.endpoint_prefix + oauth_redirect_url
             return get_swagger_ui_html(
-                openapi_url=openapi_url,
+                openapi_url="/" + openapi_url,
                 title=self.title + " | Swagger UI",
                 oauth2_redirect_url=oauth2_redirect_url,
-                init_oauth=None,  # todo: Create some init option
+                init_oauth=None,  # todo:z Create some init option
                 swagger_params=self.swagger_params,
             )
 
@@ -754,12 +760,16 @@ class OpenAPIRouter(Router):  # pragma: no cover
             request.params, variablized_url = self.KuaRoutes.match(request.path)
             response_ = await response_routes[variablized_url](request, response)
             return response_
+        except ValidationError as e:
+            response_ = self.config.get("422Response", Response422JSON())
+            return response_
         except KeyError:
             response_ = self.config.get("404Response", Response404JSON())
             return response_
         except HTTPException:
-            response_ = self.config.get("422Response", Response422JSON())
+            response_ = self.config.get("404Response", Response404JSON())
             return response_
+
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())

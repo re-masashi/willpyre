@@ -1,4 +1,13 @@
-from willpyre import App, APIRouter, JSONResponse, Cookie, TextResponse, Redirect
+from willpyre import (
+    App,
+    APIRouter,
+    JSONResponse,
+    Cookie,
+    TextResponse,
+    Redirect,
+    Router,
+    HTMLResponse,
+)
 from willpyre.schema import schema, Conint
 
 
@@ -8,10 +17,10 @@ class Ok:
     random: int = 1
 
 
-router = APIRouter(description="Simple API", title="Simple API", definitions=[Ok])
+apirouter = APIRouter(description="Simple API", title="Simple API", definitions=[Ok])
 
 
-@router.get("/api/:var|int", tags=["easy"], response_model="Ok")
+@apirouter.get("/:var|int", tags=["easy"], response_model="Ok")
 async def var(req, res):
     """
     Return ok. JSON.
@@ -19,4 +28,16 @@ async def var(req, res):
     return JSONResponse({"response": "OK", "var": req.params.get("var")})
 
 
+router = Router()
+
+
+@router.get("/")
+async def index(req, res):
+    return HTMLResponse(data="INDEX")
+
+
+router.embed_router("/api", apirouter)
+
+print("api ", apirouter.routes)
+print("router", router.routes)
 main = App(router)
