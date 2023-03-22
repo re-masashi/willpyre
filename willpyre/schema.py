@@ -133,7 +133,11 @@ def _match_type(annotation, value):
             )
 
     if isinstance(annotation, Constr):
-        if type(value) is str and len(value) >= annotation.min and len(value) <= annotation.max:
+        if (
+            type(value) is str
+            and len(value) >= annotation.min
+            and len(value) <= annotation.max
+        ):
             return value
         else:
             raise ValidationError("Wrong type.")
@@ -175,7 +179,7 @@ def validate_json(schema, data: dict):
         raise TypeError(f"{schema} is not a valid schema")
 
     errors, params = {}, {}
-    for field in schema.__FIELDS__.values(): # type: ignore
+    for field in schema.__FIELDS__.values():  # type: ignore
         try:
             value = data.get(field.name, Missing)
             params[field.name] = _validate(field, value)
@@ -192,7 +196,7 @@ def schema_repr(schema):
         raise TypeError(f"{schema} is not a valid schema")
 
     params = {}
-    for field in schema.__FIELDS__.values(): # type: ignore
+    for field in schema.__FIELDS__.values():  # type: ignore
         if field.annotation is int:
             annotation = "integer"
         elif field.annotation is float:
@@ -218,7 +222,7 @@ def schema_to_json(schema):
         raise TypeError(f"{schema} is not a valid schema")
 
     errors, params = {}, {}
-    for field in schema.__FIELDS__.values(): # type: ignore
+    for field in schema.__FIELDS__.values():  # type: ignore
         try:
             value = field.default
             if value is Missing:

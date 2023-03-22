@@ -4,10 +4,11 @@ import email
 import json
 from .schema import error_schema, validate_json, ErrorResponse, schema_to_json
 
+
 class TypedMultiMap(dict):
-    def __init__(self, mapping:Union[Any, None]=None):
+    def __init__(self, mapping: Union[Any, None] = None):
         if isinstance(mapping, TypedMultiMap):
-            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists())) # type: ignore
+            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists()))  # type: ignore
         elif isinstance(mapping, dict):
             temp = dict()
             for key, value in mapping.items():
@@ -56,7 +57,7 @@ class TypedMultiMap(dict):
         """
         Inserts a key for the value given.
         """
-        dict.setdefault(self, key, []).append(value) # type: ignore
+        dict.setdefault(self, key, []).append(value)  # type: ignore
 
     def to_dict(self, flat=True):
         """
@@ -69,9 +70,9 @@ class TypedMultiMap(dict):
 
         if flat:
             return dict(self.items())
-        return dict(self.lists()) # type: ignore
+        return dict(self.lists())  # type: ignore
 
-    def get_all(self, key, type_:Any=None):
+    def get_all(self, key, type_: Any = None):
         """
         Fetches the list of all the items present.
         """
@@ -140,8 +141,6 @@ def parse_multipart(
     return body, files
 
 
-
-
 class Response:
     """
 
@@ -198,7 +197,13 @@ class Request:
     params, cookies = {}, {}
 
     def __init__(
-        self, method: str, path: str, raw_body: bytes, raw_query: bytes, headers, *args,
+        self,
+        method: str,
+        path: str,
+        raw_body: bytes,
+        raw_query: bytes,
+        headers,
+        *args,
     ):
         """
 
@@ -225,9 +230,7 @@ class Request:
         self.content_type: str = content_type
 
         if content_type.startswith("multipart/form-data"):
-            self.body, self.files = parse_multipart(
-                content_type, self.raw_body
-            )
+            self.body, self.files = parse_multipart(content_type, self.raw_body)
             # print(self.files)
         else:
             self.body = TypedMultiMap(parse.parse_qs(raw_body.decode()))
@@ -236,7 +239,7 @@ class Request:
         if "cookie" in self.headers.keys():
             [
                 self.cookies.update({_.split("=")[0]: _.split("=")[1]})
-                for _ in self.headers["cookie"].split(";") # type: ignore
+                for _ in self.headers["cookie"].split(";")  # type: ignore
             ]
 
 

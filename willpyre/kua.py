@@ -107,7 +107,7 @@ def unwrap(variable_parts: WrappedVariablePartsType) -> VariablePartsType:
 
 def make_params(
     key_parts: Sequence[str], variable_parts: VariablePartsIterType
-)->Dict:
+) -> Dict:
     """
     Map keys to variables. This map\
     URL-pattern variables to\
@@ -165,9 +165,7 @@ def _route(key_parts: Sequence, validate: ValidateType) -> _Route:
     return _Route(key_parts=key_parts, validate=validate)
 
 
-def _resolve(
-    variable_parts, routes: Sequence[_Route], validation_dict: dict
-) -> Any:
+def _resolve(variable_parts, routes: Sequence[_Route], validation_dict: dict) -> Any:
     for route in routes:
         if validate(route.key_parts, variable_parts, route.validate, validation_dict):
             return make_params(key_parts=route.key_parts, variable_parts=variable_parts)
@@ -317,14 +315,14 @@ class Routes:
                     (
                         {self._VAR_ANY_NODE: curr[self._VAR_ANY_NODE]},
                         (curr_variable_parts, (self._VAR_ANY_NODE, part)),
-                        depth + 1, # type: ignore
+                        depth + 1,  # type: ignore
                     )
                 )
                 to_visit.append(
                     (
                         curr[self._VAR_ANY_NODE],
                         (curr_variable_parts, (self._VAR_ANY_BREAK, part)),
-                        depth + 1, #type: ignore
+                        depth + 1,  # type: ignore
                     )
                 )
 
@@ -333,12 +331,12 @@ class Routes:
                     (
                         curr[self._VAR_NODE],
                         (curr_variable_parts, (self._VAR_NODE, part)),
-                        depth + 1, #type: ignore
+                        depth + 1,  # type: ignore
                     )
                 )
 
             if part in curr:
-                to_visit.append((curr[part], curr_variable_parts, depth + 1)) # type: ignore
+                to_visit.append((curr[part], curr_variable_parts, depth + 1))  # type: ignore
 
         raise HTTPException()
 
@@ -362,7 +360,7 @@ class Routes:
 
         route_match = self._match(parts)
         for param in list(route_match.keys()):
-            route_param: Union[Tuple, str] = route_match[param] # type: ignore
+            route_param: Union[Tuple, str] = route_match[param]  # type: ignore
             if isinstance(route_param, str):
                 original_url = original_url.replace(route_param, param, 1)
             else:  # param is a list
