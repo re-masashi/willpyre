@@ -280,6 +280,7 @@ class Router(StaticRouter):
         }
         self.KuaRoutes = Routes(self.validation_dict)
         self.WSKuaRoutes = Routes(self.validation_dict)
+        self.embeds = {}
         super().__init__(endpoint_prefix)
 
     def add_route(
@@ -300,29 +301,11 @@ class Router(StaticRouter):
         if mount_at[-1] == "/":
             mount_at = mount_at[:-1]
         router.endpoint_prefix = mount_at
-        if (self.KuaRoutes._max_depth - router.KuaRoutes._max_depth) < 1:
-            self.KuaRoutes._max_depth = router.KuaRoutes._max_depth + 1
-
-        self.KuaRoutes._routes[mount_at] = deepcopy(router.KuaRoutes._routes)
-        if router.KuaRoutes._routes.get("", "NOT_FOUND") != "NOT_FOUND":
-            self.KuaRoutes._routes[mount_at][":route"] = router.KuaRoutes._routes[""][
-                ":route"
-            ]
-            self.KuaRoutes._routes[mount_at].pop("")
-
-        [
-            self.routes[method].update(
-                (f"/{mount_at}{route}", router.routes[method][route])
-                for route in router.routes[method]
-            )
-            for method in router.routes
-        ]
-        for endpoint in router.endpoints:
-            self.add_endpoint(router.endpoints[endpoint], endpoint)
+        self.embeds[mount_at] = router
         try:
             paths = {}
-            for path, methods in router.paths.items():
-                paths["/" + mount_at + path] = methods
+            for path, method in router.paths.items():
+                paths['/' + mount_at + path] = method
             router.paths = paths
         except AttributeError:
             pass
@@ -330,11 +313,13 @@ class Router(StaticRouter):
     async def handle(self, request: Request, response: Response) -> Response:
         if request.path[-1] != "/":
             request.path += "/"
+        match = re.match('/[^/]+', request.path)
+        if match is not None:
+            if match.group()[1:] in self.embeds.keys():
+                request.path = request.path[match.span()[1]:]
+                return await self.embeds[match.group()[1:]].handle(request, response)
         try:
-            if request.method == "HEAD":
-                response_routes = self.routes["GET"]
-            else:
-                response_routes = self.routes[request.method]
+            response_routes = self.routes[request.method]
         except KeyError:
             # pdb.set_trace()
             # Key errors occur on when no method is found on a route.

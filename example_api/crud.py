@@ -8,14 +8,7 @@ from willpyre import (
     Router,
     HTMLResponse,
 )
-from willpyre.schema import schema, Conint
-
-
-@schema
-class Ok:
-    var: Conint(1, 2) = 21
-    random: int = 1
-
+from .schemas import Ok
 
 apirouter = APIRouter(
     description="Simple API",
@@ -35,16 +28,3 @@ async def var(req, res):
             "var": req.params.get("var"),
         }
     )
-
-
-router = Router()
-
-
-@router.get("/")
-async def index(req, res):
-    return HTMLResponse(data="INDEX")
-
-
-router.embed_router("/api", apirouter)
-
-main = App(router)
