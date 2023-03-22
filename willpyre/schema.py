@@ -243,15 +243,13 @@ class ErrorResponse:
 
 
 def populate_schema(schema, **kwargs):
+    _copy = type(schema.__name__, (), {})
+    setattr(_copy, "__FIELDS__", schema.__FIELDS__)
+    setattr(_copy, "__slots__", schema.__slots__)
     for arg, val in kwargs.items():
-        schema.__FIELDS__[arg] = Field(arg, schema.__FIELDS__[arg].annotation, val)
-    return schema
+        _copy.__FIELDS__[arg] = Field(arg, _copy.__FIELDS__[arg].annotation, val)
+    return _copy
 
 
 def error_schema(message: str, status: int):
-    @schema
-    class ErrorResponse:
-        message: str
-        status: int
-
     return populate_schema(ErrorResponse, message=message, status=status)

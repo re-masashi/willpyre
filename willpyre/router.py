@@ -305,7 +305,7 @@ class Router(StaticRouter):
         try:
             paths = {}
             for path, method in router.paths.items():
-                paths['/' + mount_at + path] = method
+                paths["/" + mount_at + path] = method
             router.paths = paths
         except AttributeError:
             pass
@@ -313,10 +313,10 @@ class Router(StaticRouter):
     async def handle(self, request: Request, response: Response) -> Response:
         if request.path[-1] != "/":
             request.path += "/"
-        match = re.match('/[^/]+', request.path)
+        match = re.match("/[^/]+", request.path)
         if match is not None:
             if match.group()[1:] in self.embeds.keys():
-                request.path = request.path[match.span()[1]:]
+                request.path = request.path[match.span()[1] :]
                 return await self.embeds[match.group()[1:]].handle(request, response)
         try:
             response_routes = self.routes[request.method]
@@ -469,6 +469,8 @@ class OpenAPIRouter(Router):  # pragma: no cover
         path_parameters=[],
         auto_path_parameters=True,
         no_docs: bool = False,
+        body_model=None,
+        body_parameters=[],
         **kwargs,
     ):
         Router.add_route(self, path, method, handler)
@@ -478,7 +480,22 @@ class OpenAPIRouter(Router):  # pragma: no cover
 
         path_ = path
 
+        if body_model:
+            params = [
+                {
+                    "in": "body",
+                    "name": "body",
+                    "reqired": True,
+                    "schema": {"$ref": "#/definitions/" + body_model.__name__},
+                }
+            ]
+            body_parameters += params
+
         match = re.search(r"/:[^/]+", path_)
+        if not match:
+            path_parameters = []
+
+        print(path_, match)
 
         while match:  # match becomes None when there are no more occurences
             var = match.group()[2:]
@@ -486,17 +503,27 @@ class OpenAPIRouter(Router):  # pragma: no cover
                 var += "|str"
             var, validation = var.split("|")
             path_ = path_[: match.span()[0]] + "/{" + var + "}/"
+            if not auto_path_parameters:
+                return
 
-            params = [{"name": var, "reqired": True, "type": validation, "in": "path"}]
+            params = [
+                {
+                    "name": var,
+                    "reqired": True,
+                    "type": validation,
+                    "in": "path",
+                }
+            ]
             match = re.search(r"/:[^/]+", path_)
-
-            if auto_path_parameters:
-                path_parameters += params
+            print("append path_parameters " + path_)
+            path_parameters += params
 
         description = handler.__doc__
 
         if response_model:
-            responses["200"]["schema"] = {"$ref": "#/definitions/" + response_model}
+            responses["200"]["schema"] = {
+                "$ref": "#/definitions/" + response_model.__name__
+            }
 
         self.paths[path_] = {}
         self.paths[path_][method.lower()] = {
@@ -504,11 +531,12 @@ class OpenAPIRouter(Router):  # pragma: no cover
             "summary": summary,
             "consumes": consumes,
             "produces": produces,
-            "parameters": path_parameters,
+            "parameters": path_parameters + body_parameters,
             "responses": responses,
             "description": description,
             "security": security,
         }
+        del path_parameters
 
     def add_api_route(
         self,

@@ -24,7 +24,7 @@ apirouter = APIRouter(
 )
 
 
-@apirouter.get("/:var|int", tags=["easy"], response_model="Ok")
+@apirouter.get("/:var|int", tags=["easy"], response_model=Ok)
 async def var(req, res):
     """
     Return ok. JSON.
