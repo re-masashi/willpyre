@@ -49,6 +49,7 @@ async def createUser(req, res):
     Creates a User and returns it. 
     Will return a message if user exists.
     '''
+    print(req.raw_body, req.body["usertag"])
     USER = Query()
     users = usersdb.search(USER.usertag == req.body["usertag"])
     if len(users) != 0:

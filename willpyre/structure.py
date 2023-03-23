@@ -232,6 +232,9 @@ class Request:
         if content_type.startswith("multipart/form-data"):
             self.body, self.files = parse_multipart(content_type, self.raw_body)
             # print(self.files)
+        elif content_type.startswith("application/json"):
+            self.body =     TypedMultiMap(json.loads(self.raw_body.decode()))
+            self.files = TypedMultiMap({})
         else:
             self.body = TypedMultiMap(parse.parse_qs(raw_body.decode()))
             self.files = TypedMultiMap({})
