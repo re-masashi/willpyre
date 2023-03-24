@@ -48,15 +48,15 @@ You can set values for fields in a schema from the data you want.
 .. code-block :: python
 
 	# print(
-		schema_to_json(
-			populate_schema(User, name="User1", 
-			usertag='user1',
-			),
-		)
+		# schema_to_json(
+		# 	populate_schema(User, name="User1", 
+		# 	usertag='user1',
+		# 	),
+		# )
 
 If you uncomment this code and run it, you will get:
 
-..code-block :: python
+.. code-block :: python
 
 	{ "name":"User1", "usertag": "user1"}
 
@@ -72,7 +72,7 @@ When you accept arbitrary input from users, you may need to check if they are va
 .. code-block :: python
 
 	validate_json(User, { "name":"User1", "usertag": "user1"})
-	# 			/Schema\, 		/			data		\
+	# validate_json(schema, data)
 
 We are validating ``{ "name":"User1", "usertag": "user1"}`` with respect to User and it will return:
 
