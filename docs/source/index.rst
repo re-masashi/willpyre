@@ -27,6 +27,8 @@ Contents
    middleware
    advanced
    documentation/index
+   swagger
+   models
 
 
 

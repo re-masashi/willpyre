@@ -203,7 +203,7 @@ def gen_openapi_schema(  # pragma: no cover
     schema["paths"] = paths
     schema["info"] = info
     schema["version"] = version
-    if openapi_version == '2.0':
+    if openapi_version == "2.0":
         schema["definitions"] = definitions
     else:
         schema["components"] = {"schemas": definitions}

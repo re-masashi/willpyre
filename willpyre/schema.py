@@ -75,16 +75,10 @@ def schema(cls):
       ...   username: str
       ...   password: str
       ...   is_admin: bool
-      >>> load_schema(Account, {})
-      Traceback (most recent call last):
-        ...
-      ValidationError: {'username': 'this field is required', 'password': 'this field is required'}
-      >>> load_schema(Account, {"username": "example", "password": "secret"})
-      Account(username='example', password='secret', is_admin=False)
-      >>> dump_schema(load_schema(Account, {"username": "example", "password": "secret"}))
-      {'username': 'example', 'is_admin': False}
     Raises:
       RuntimeError: When the attributes are invalid.
+    Args:
+        cls(object): the schema class with fields
     """
     fields = {}
 
@@ -251,7 +245,8 @@ def populate_schema(schema, **kwargs):
     setattr(_copy, "__FIELDS__", schema.__FIELDS__)
     setattr(_copy, "__slots__", schema.__slots__)
     for arg, val in kwargs.items():
-        _copy.__FIELDS__[arg] = Field(arg, _copy.__FIELDS__[arg].annotation, val)
+        if schema.__FIELDS__.get(arg, None) is not None:
+            _copy.__FIELDS__[arg] = Field(arg, _copy.__FIELDS__[arg].annotation, val)
     return _copy
 
 

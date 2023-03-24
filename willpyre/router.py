@@ -357,10 +357,32 @@ class Router(StaticRouter):
 
 
 class OpenAPIRouter(Router):  # pragma: no cover
+    """
+    OpenAPIRouter class has the HTTP methods, paths, and handlers and other info required for OpenAPI based docs.
+    Args:
+      self: The class ``willpyre.structure.Request``
+      description(str): Description of the API
+      schemes(List[str]): Default = ['http','https']
+      version(str): Default = "0.0.1". Version of your API.
+      endpoint_prefix(str): prefix of paths for internal info.
+      body(str): The HTTP request body.
+      oauth_redirect_url(str): Default = "/openapi-rediect".
+      tos_url(str): Default="/terms-of-service".
+      docs_url(str): Default="/docs".
+      tags(List[str]): Default=[].
+      dependencies: Default=None.
+      swagger_params: Default=None.
+      swagger_favicon(str): Default = "/favicon.ico".
+      definitions(List[Any]): Default = []
+      license:Default=None
+      contact:Default=None
+      host:Default=None
+    """
+
     def __init__(
         self,
         description: str = "",
-        schemes: list = ["http", "https"],
+        schemes: List[str] = ["http", "https"],
         version: str = "0.0.1",
         endpoint_prefix: str = "",
         openapi_url: str = "/openapi.json",
@@ -369,7 +391,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         openapi_version: str = "3.0.0",
         title: str = "",
         docs_url="/docs",
-        tags=[],
+        tags: List[str] = [],
         dependencies=None,
         swagger_params=None,
         swagger_favicon: str = "/favicon.ico",
@@ -398,13 +420,12 @@ class OpenAPIRouter(Router):  # pragma: no cover
         self.endpoint_prefix = endpoint_prefix
 
         self.openapi_schema = {}
-        if self.openapi_version == '2.0':
-            self.openapi_base_url = '#/definitions/'
-        elif self.openapi_version.startswith('3.0'):
-            self.openapi_base_url = '#/components/schemas/'
+        if self.openapi_version == "2.0":
+            self.openapi_base_url = "#/definitions/"
+        elif self.openapi_version.startswith("3.0"):
+            self.openapi_base_url = "#/components/schemas/"
         else:
-            raise ValueError(f'{self.openapi_version } is an invalid version.')
-
+            raise ValueError(f"{self.openapi_version } is an invalid version.")
 
         super().__init__(endpoint_prefix)
         definitions_dict = {}

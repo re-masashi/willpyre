@@ -48,7 +48,7 @@ async def createUser(req, res):
     """
     USER = Query()
     users = usersdb.search(USER.usertag == req.body["usertag"])
-    body = validate_json(User,req.body)
+    body = validate_json(User, req.body)
     if len(users) != 0:
         return JSONResponse(schema_to_json(error_schema("User already exists", 404)))
     usersdb.insert(body)
@@ -63,8 +63,8 @@ async def createUser(req, res):
 )
 async def createUser(req, res):
     """
-    Creates a User and returns it.
-    Will return a message if user exists.
+    Creates an Event and returns it.
+    Will return a message if it exists.
     """
     EVENT = Query()
     body = validate_json(Event, req.body)
@@ -76,9 +76,9 @@ async def createUser(req, res):
 
 
 @apirouter.get("/events/get/:title", tags=["event"], response_model=Event)
-async def getUser(req, res):
+async def getEvent(req, res):
     """
-    Gets the user from DB and returns it.
+    Gets the event from DB and returns it.
     """
     EVENT = Query()
     events = eventsdb.search(EVENT.title == req.params["title"])
