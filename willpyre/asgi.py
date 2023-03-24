@@ -2,6 +2,11 @@ from . import structure
 
 
 class ASGI:
+    """
+    Internal representation of an ASGI app.
+    This is present inside the :class:willpyre.App.
+    """
+
     def __init__(self, app):
         self.app = app
 

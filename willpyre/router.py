@@ -464,13 +464,15 @@ class OpenAPIRouter(Router):  # pragma: no cover
         consumes=["application/json"],
         produces=["application/json"],
         parameters=["parameters"],
-        responses={"200": {"description": ""}},
+        responses={
+            "200": {"description": ""},
+        },
         security=[],
-        path_parameters=[],
+        path_parameters=None,
         auto_path_parameters=True,
         no_docs: bool = False,
         body_model=None,
-        body_parameters=[],
+        body_parameters=None,
         **kwargs,
     ):
         Router.add_route(self, path, method, handler)
@@ -478,7 +480,10 @@ class OpenAPIRouter(Router):  # pragma: no cover
         if no_docs:
             return
 
-        path_ = path
+        if not path_parameters:
+            path_parameters = []
+        if not body_parameters:
+            body_parameters = []
 
         if body_model:
             params = [
@@ -491,11 +496,10 @@ class OpenAPIRouter(Router):  # pragma: no cover
             ]
             body_parameters += params
 
+        path_ = path
         match = re.search(r"/:[^/]+", path_)
         if not match:
             path_parameters = []
-
-        print(path_, match)
 
         while match:  # match becomes None when there are no more occurences
             var = match.group()[2:]
@@ -515,7 +519,6 @@ class OpenAPIRouter(Router):  # pragma: no cover
                 }
             ]
             match = re.search(r"/:[^/]+", path_)
-            print("append path_parameters " + path_)
             path_parameters += params
 
         description = handler.__doc__

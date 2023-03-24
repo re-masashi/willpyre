@@ -8,16 +8,17 @@ from willpyre import (
     Router,
     HTMLResponse,
 )
-from willpyre.schema import schema_to_json, populate_schema, error_schema
-from .schemas import Ok, User, Todo
+from willpyre.schema import schema_to_json, populate_schema, error_schema, validate_json
+from .schemas import Ok, User, Event
 from tinydb import TinyDB, Query
 
 usersdb = TinyDB("example_api/users.json")
+eventsdb = TinyDB("example_api/events.json")
 
 apirouter = APIRouter(
     description="Simple API",
     title="Simple API",
-    definitions=[Ok, User, Todo],
+    definitions=[Ok, User, Event],
 )
 
 
@@ -29,34 +30,59 @@ async def getUser(req, res):
     USER = Query()
     users = usersdb.search(USER.usertag == req.params["usertag"])
     if len(users) == 0:
-        return JSONResponse(schema_to_json(error_schema("User exists", 200)))
-    usertag = users[0]["usertag"]
-    name = users[0]["name"]
-    return JSONResponse(
-        schema_to_json(populate_schema(User, usertag=usertag, name=name))
-    )
+        return JSONResponse(schema_to_json(error_schema("User doesn't exist", 200)))
+    user = validate_json(User, users[0])
+    return JSONResponse(schema_to_json(populate_schema(User, **user)))
 
 
 @apirouter.post(
     "/users/create",
     tags=["user"],
     response_model=User,
-    auto_path_parameters=False,
     body_model=User,
 )
 async def createUser(req, res):
-    '''
-    Creates a User and returns it. 
+    """
+    Creates a User and returns it.
     Will return a message if user exists.
-    '''
-    print(req.raw_body, req.body["usertag"])
+    """
     USER = Query()
     users = usersdb.search(USER.usertag == req.body["usertag"])
+    body = validate_json(req.body)
     if len(users) != 0:
         return JSONResponse(schema_to_json(error_schema("User already exists", 404)))
-    usertag = req.body["usertag"]
-    name = req.body["name"]
-    usersdb.insert({"name": name, "usertag": usertag})
-    return JSONResponse(
-        schema_to_json(populate_schema(User, usertag=usertag, name=name))
-    )
+    usersdb.insert(body)
+    return JSONResponse(schema_to_json(populate_schema(User, **body)))
+
+
+@apirouter.post(
+    "/events/create",
+    tags=["event"],
+    response_model=Event,
+    body_model=Event,
+)
+async def createUser(req, res):
+    """
+    Creates a User and returns it.
+    Will return a message if user exists.
+    """
+    EVENT = Query()
+    body = validate_json(Event, req.body)
+    events = eventsdb.search(EVENT.title == req.body["title"])
+    if len(events) != 0:
+        return JSONResponse(schema_to_json(error_schema("Event already exists", 200)))
+    eventsdb.insert(body)
+    return JSONResponse(schema_to_json(populate_schema(Event, **body)))
+
+
+@apirouter.get("/events/get/:title", tags=["event"], response_model=Event)
+async def getUser(req, res):
+    """
+    Gets the user from DB and returns it.
+    """
+    EVENT = Query()
+    events = eventsdb.search(EVENT.title == req.params["title"])
+    if len(events) == 0:
+        return JSONResponse(schema_to_json(error_schema("Event doesn't exist", 404)))
+    event = validate_json(Event, events[0])
+    return JSONResponse(schema_to_json(populate_schema(Event, **event)))

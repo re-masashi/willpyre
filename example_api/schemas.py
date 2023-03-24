@@ -14,6 +14,6 @@ class User:
 
 
 @schema
-class Todo:
+class Event:
     title: str
-    content: str
+    description: str

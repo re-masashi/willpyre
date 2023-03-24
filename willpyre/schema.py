@@ -161,14 +161,16 @@ def _validate(field, value):
     if value is Missing:
         if field.default is not Missing:
             return field.default
-        raise ValidationError("this field is required")
+        raise ValidationError(f"{field.name} field is required")
 
     return _match_type(field.annotation, value)
 
 
 def validate_json(schema, data: dict):
-    """Validate the given data dictionary against a schema and
+    """
+    Validate the given data dict object against a schema and
     instantiate the schema.
+    Will not raise any error if there are extra fields in the dict. IT will remove them in the return value.
     Raises:
       ValidationError: When the input data is not valid.
     Parameters:
@@ -188,6 +190,8 @@ def validate_json(schema, data: dict):
 
     if errors != {}:
         raise ValidationError(errors)
+
+    return params
 
 
 def schema_repr(schema):
