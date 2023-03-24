@@ -398,6 +398,13 @@ class OpenAPIRouter(Router):  # pragma: no cover
         self.endpoint_prefix = endpoint_prefix
 
         self.openapi_schema = {}
+        if self.openapi_version == '2.0':
+            self.openapi_base_url = '#/definitions/'
+        elif self.openapi_version.startswith('3.0'):
+            self.openapi_base_url = '#/components/schemas/'
+        else:
+            raise ValueError(f'{self.openapi_version } is an invalid version.')
+
 
         super().__init__(endpoint_prefix)
         definitions_dict = {}
@@ -491,7 +498,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
                     "in": "body",
                     "name": "body",
                     "reqired": True,
-                    "schema": {"$ref": "#/definitions/" + body_model.__name__},
+                    "schema": {"$ref": self.openapi_base_url + body_model.__name__},
                 }
             ]
             body_parameters += params
@@ -525,7 +532,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
 
         if response_model:
             responses["200"]["schema"] = {
-                "$ref": "#/definitions/" + response_model.__name__
+                "$ref": self.openapi_base_url + response_model.__name__
             }
 
         self.paths[path_] = {}

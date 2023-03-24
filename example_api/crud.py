@@ -48,7 +48,7 @@ async def createUser(req, res):
     """
     USER = Query()
     users = usersdb.search(USER.usertag == req.body["usertag"])
-    body = validate_json(req.body)
+    body = validate_json(User,req.body)
     if len(users) != 0:
         return JSONResponse(schema_to_json(error_schema("User already exists", 404)))
     usersdb.insert(body)
