@@ -1,7 +1,9 @@
 # Willpyre
 
 -------------------------
-
+<p align="center">`
+	![Willpyre logo](docs/source/assets/logo_big.png)
+</p>
 [![Documentation Status](https://readthedocs.org/projects/willpyre/badge/?version=latest)](https://willpyre.readthedocs.io/en/latest/?badge=latest)
 [![Test and PEP8](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml/badge.svg)](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/re-masashi/willpyre)
