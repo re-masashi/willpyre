@@ -26,9 +26,10 @@ Contents
    quick_start
    middleware
    advanced
-   documentation/index
    swagger
    models
+   documentation/index
+
 
 
 

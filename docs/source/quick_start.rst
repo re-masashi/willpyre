@@ -57,6 +57,7 @@ If you specified some path with `.get` method, it wulll only respond to HTTP `GE
 POST, PUT, FETCH, etc will result in a 'Not Found' response. 
 
 .. code-block :: python
+
 	@router.get('/')
 	async def index_get(request, response):
 		response.body = "Get"
@@ -181,6 +182,7 @@ The default validators are:
 
 You can add custom validators as well. 
 .. code-block :: python
+
 	router.validation_dict["super"] = lambda var: var == 'super'
 
 Now, if the parameter (something|super) is equal to 'super'.
@@ -195,7 +197,7 @@ However, type validation cannot be done here. It just matches everything.
 Eg:
 
 .. code-block :: python
-	
+
 	@router.get('/files/:*filepath')
 	async def file_hosting(request, response):
 		filepath = request.params.get('filepath')

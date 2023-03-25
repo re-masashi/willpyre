@@ -2,7 +2,7 @@
 
 -------------------------
 <p align="center">`
-	![Willpyre logo](docs/source/assets/logo_big.png)
+	![Willpyre logo](https://github.coom/re-masashi/willpyre/tree/main/docs/assets/logo_big.png)
 </p>
 [![Documentation Status](https://readthedocs.org/projects/willpyre/badge/?version=latest)](https://willpyre.readthedocs.io/en/latest/?badge=latest)
 [![Test and PEP8](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml/badge.svg)](https://github.com/Nafi-Amaan-Hossain/willpyre/actions/workflows/actions.yml)

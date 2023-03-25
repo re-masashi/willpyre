@@ -1,4 +1,4 @@
-Working with models(schemas)
+Working with models (schemas)
 ============================
 
 A schema is like a frame where you define your data and how you want it to be.

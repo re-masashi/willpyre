@@ -24,7 +24,7 @@ Willpyre is based on the `ASGI specification`_ and can be used with any ASGI ser
 
 .. note :: 
 	Willpyre, does not prefer any specific ASGI server. It gives you the choice.
-	You can use any ASGI server like [Uvicorn](https://uvicorn.org), [Hypercorn](https://github.com/pgjones/hypercorn), [Daphne](https://github.com/django/daphne) or [Granian](https://github.com/emmett-framework/granian).
+	You can use any ASGI server like `Uvicorn <https://github.com/encode/uvicorn>`_, `Hypercorn <https://github.com/pgjones/hypercorn>`_, `Daphne <https://github.com/django/daphne>`_ or `Granian <https://github.com/emmett-framework/granian>`_.
 
 Testing framework installation
 ------------------------------

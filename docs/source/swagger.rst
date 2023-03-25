@@ -3,12 +3,13 @@ Using SwaggerUI (by OpenAPI)
 
 Willpyre has support for building APIs rapidly.
 
+
 Step 0 (Define the Models):
 ---------------------------
 
 Define the response schemas for various responses.
 
-Check the  :ref:`models page<models.html>`.
+Check the  `models page <https://willpyre.readthedocs.io/en/latest/models.html>`_.
 
 We will use the same models as the example there.
 
@@ -43,26 +44,26 @@ Initialise the router with the configuration you need.
 
 
 Some possible arguments to APIRouter are:
-	description(str)- Description of the API.
+	* **description** (str)- Description of the API.
 
-	title(str)- Title of the API.
+	* **title** (str)- Title of the API.
 	
-	definitions(list of schema objects)- Definitions of various models in your app.
+	* **definitions** (list of schema objects)- Definitions of various models in your app.
 	
-	schemes(list of URL schemes). Default = ['http','https'].
+	* **schemes** (list of URL schemes). Default = ['http','https'].
 	
-	version(str). Default = "0.0.1"- Version of your API.
+	* **version** (str). Default = "0.0.1"- Version of your API.
 	
-	openapi_version(str). Default="3.0.0". Can either be '2.0' or '3.0.n'
+	* **openapi_version** (str). Default="3.0.0". Can either be '2.0' or '3.0.n'
 	
-	tos_url(str). Default="/terms-of-service".
+	* **tos_url** (str). Default="/terms-of-service".
 	
-	docs_url(str). Default="/docs".
+	* **docs_url** (str). Default="/docs".
 	
-	license. Default=None.
+	* **license**. Default=None.
 	
-	host. Default=None.
-	contact. Default=None.
+	* **host**. Default=None.
+	* **contact**. Default=None.
 
 
 
