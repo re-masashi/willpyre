@@ -23,7 +23,6 @@ class ASGI:
                     raw_query=scope["query_string"],
                     raw_body=body,
                 ),
-                self.app.response,
             )
 
             if response_.cookies is not dict():

@@ -40,7 +40,7 @@ Then the aplication is runnning and you have setup everything fine..
 Now if you go to localhost:8000/, 
 you will find the text **Hello, Willpyre** to be present there.
 
-The ``@router.get()`` decorator required one path, to be specified. Here, it was passed as ``@router.get('/')``. Hence, only requests to '/' using HTTP ``GET`` method will be replied to. Others will lead to a 404 response.
+The ``@router.get`` decorator required one path, to be specified. Here, it was passed as ``@router.get('/')``. Hence, only requests to '/' using HTTP ``GET`` method will be replied to. Others will lead to a 404 response.
 
 -----------
 URL Routing

@@ -1,7 +1,6 @@
 from . import structure, asgi
 from .router import Router, OpenAPIRouter
 import logging
-from .common import router_config, apirouter_config
 
 
 class App:
@@ -15,7 +14,10 @@ class App:
     """
 
     def __init__(
-        self, router: Router, response: structure.Response = structure.Response()
+        self,
+        router: Router,
+        response: structure.Response = structure.Response(),
+        config=None,
     ):
         def startup():
             pass
@@ -23,17 +25,13 @@ class App:
         def shutdown():
             pass
 
-        self.config = {
-            "startup": startup,
-            "shutdown": shutdown,
-            "logger": logging.debug,
-            "router_config": router_config
-        }
+        if not config:
+            self.config = {
+                "startup": startup,
+                "shutdown": shutdown,
+                "logger": logging.debug,
+            }
         self.router = router
-        router.config = self.config["router_config"]
-        if isinstance(router, OpenAPIRouter):
-            self.config["router_config"] = apirouter_config
-            router.config = apirouter_config
         self.response = response
         self._app = asgi.ASGI(self)
 

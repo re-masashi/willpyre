@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 from copy import deepcopy
 import traceback
 import re
@@ -24,6 +24,7 @@ from .openapi import (
     get_swagger_ui_oauth2_redirect_html,
     gen_openapi_schema,
 )
+from .common import router_config, apirouter_config
 
 
 class StaticRouter:
@@ -32,7 +33,11 @@ class StaticRouter:
     Not meant for usage. Acts as a base class.
     """
 
-    def __init__(self, endpoint_prefix=""):
+    def __init__(
+        self,
+        endpoint_prefix="",
+        config: Union[None, Dict[str, Any]] = None,
+    ):
         self.routes = dict()
         self.routes["GET"] = {}
         self.routes["POST"] = {}
@@ -50,6 +55,9 @@ class StaticRouter:
         self.config = dict()
         self.endpoints = dict()
         self.endpoint_prefix = endpoint_prefix
+        if not config:
+            config = router_config
+        self.config = config
 
     def add_route(
         self, path: str, method: str, handler: Callable, endpoint_name: str = ""
@@ -237,7 +245,7 @@ class StaticRouter:
 
         return decorator
 
-    async def handle(self, request, response) -> Response:
+    async def handle(self, request) -> Response:
         """
         The handle function wil handle the requests and send appropriate responses,
         based on the functions defined.
@@ -249,6 +257,7 @@ class StaticRouter:
           :class:`willpyre.structure.Response`
 
         """
+        response = self.config.get("response", HTMLResponse)
         if request.path[-1] != "/":
             request.path += "/"
         try:
@@ -268,7 +277,11 @@ class Router(StaticRouter):
     """The Router class handles routing of URLs.
     You need to give an endpoint prefix if you are embedding it."""
 
-    def __init__(self, endpoint_prefix: str = ""):
+    def __init__(
+        self,
+        endpoint_prefix: str = "",
+        config: Union[None, Dict[str, Any]] = None,
+    ):
         self.validation_dict = {
             "int": lambda var: var.isdigit(),
             "lcase": lambda var: var.islower(),
@@ -310,14 +323,15 @@ class Router(StaticRouter):
         except AttributeError:
             pass
 
-    async def handle(self, request: Request, response: Response) -> Response:
+    async def handle(self, request: Request) -> Response:
+        response = self.config.get("response", HTMLResponse)
         if request.path[-1] != "/":
             request.path += "/"
         match = re.match("/[^/]+", request.path)
         if match is not None:
             if match.group()[1:] in self.embeds.keys():
                 request.path = request.path[match.span()[1] :]
-                return await self.embeds[match.group()[1:]].handle(request, response)
+                return await self.embeds[match.group()[1:]].handle(request)
         try:
             response_routes = self.routes[request.method]
         except KeyError:
@@ -330,6 +344,7 @@ class Router(StaticRouter):
             self.config.get("logger_exception", print)(traceback.format_exc())
             response_ = self.config.get("500Response", Response500())  # noqa
             return response_
+
         try:
             request.params, variablized_url = self.KuaRoutes.match(request.path)
             response_ = await response_routes[variablized_url](request, response)
@@ -381,6 +396,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
 
     def __init__(
         self,
+        config: Union[None, Dict[str, Any]] = None,
         description: str = "",
         schemes: List[str] = ["http", "https"],
         version: str = "0.0.1",
@@ -418,6 +434,10 @@ class OpenAPIRouter(Router):  # pragma: no cover
         self.contact = contact
         self.host = host
         self.endpoint_prefix = endpoint_prefix
+
+        if not config:
+            config = apirouter_config
+        self.config = config
 
         self.openapi_schema = {}
         if self.openapi_version == "2.0":
@@ -782,7 +802,8 @@ class OpenAPIRouter(Router):  # pragma: no cover
             )
         return self.openapi_schema
 
-    async def handle(self, request: Request, response: Response) -> Response:
+    async def handle(self, request: Request) -> Response:
+        response = self.config.get("response", JSONResponse)
         if request.path[-1] != "/":
             request.path += "/"
         try:
