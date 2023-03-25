@@ -407,7 +407,7 @@ class HTTPException(Exception, Response):
 class JSONResponse(Response):
     def __init__(
         self,
-        data,
+        data={},
         status=200,
         content_type="application/json",
         headers=TypedMultiMap({}),
@@ -422,14 +422,17 @@ class JSONResponse(Response):
 class TextResponse(Response):
     def __init__(
         self,
-        data,
+        data="",
         status=200,
         content_type="text/plain",
         headers=TypedMultiMap({}),
         cookies=dict(),
     ):
         super().__init__(
-            headers=headers, cookies=cookies, content_type=content_type, status=status
+            headers=headers, 
+            cookies=cookies, 
+            content_type=content_type, 
+            status=status,
         )
         self.body = data
 
@@ -437,13 +440,16 @@ class TextResponse(Response):
 class HTMLResponse(Response):
     def __init__(
         self,
-        data,
+        data="",
         status=200,
         content_type="text/html",
         headers=TypedMultiMap({}),
         cookies=dict(),
     ):
         super().__init__(
-            headers=headers, cookies=cookies, content_type=content_type, status=status
+            headers=headers, 
+            cookies=cookies, 
+            content_type=content_type, 
+            status=status,
         )
         self.body = data

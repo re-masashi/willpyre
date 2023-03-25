@@ -257,7 +257,7 @@ class StaticRouter:
           :class:`willpyre.structure.Response`
 
         """
-        response = self.config.get("response", HTMLResponse)
+        response = self.config.get("response", HTMLResponse())
         if request.path[-1] != "/":
             request.path += "/"
         try:
@@ -324,7 +324,7 @@ class Router(StaticRouter):
             pass
 
     async def handle(self, request: Request) -> Response:
-        response = self.config.get("response", HTMLResponse)
+        response = self.config.get("response", HTMLResponse())
         if request.path[-1] != "/":
             request.path += "/"
         match = re.match("/[^/]+", request.path)
@@ -374,6 +374,7 @@ class Router(StaticRouter):
 class OpenAPIRouter(Router):  # pragma: no cover
     """
     OpenAPIRouter class has the HTTP methods, paths, and handlers and other info required for OpenAPI based docs.
+    
     Args:
       self: The class ``willpyre.structure.Request``
       description(str): Description of the API
@@ -803,7 +804,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         return self.openapi_schema
 
     async def handle(self, request: Request) -> Response:
-        response = self.config.get("response", JSONResponse)
+        response = self.config.get("response", JSONResponse())
         if request.path[-1] != "/":
             request.path += "/"
         try:

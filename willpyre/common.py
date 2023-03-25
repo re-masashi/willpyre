@@ -8,6 +8,7 @@ router_config = {
     "404Response": structure.Response404(),
     "405Response": structure.Response405(),
     "500Response": structure.Response500(),
+    "response": structure.Response(),
 }
 
 apirouter_config = {
@@ -17,4 +18,5 @@ apirouter_config = {
     "405Response": structure.Response405JSON(),
     "500Response": structure.Response500JSON(),
     "422Response": structure.Response422JSON(),
+    "response": structure.JSONResponse(),
 }
