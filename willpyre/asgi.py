@@ -16,7 +16,7 @@ class ASGI:
             body = await self._recieve(receive, scope["method"], b"")
 
             response_ = await self.app.router.handle(
-                structure.Request(
+                self.app.request_class(
                     method=scope["method"],
                     path=scope["path"],
                     headers=scope["headers"],
@@ -92,7 +92,7 @@ class ASGI:
         await send(
             {
                 "type": "http.response.body",
-                "body": response.body.encode(),
+                "body": response.get_body().encode(),
                 "more_body": False,
             }
         )

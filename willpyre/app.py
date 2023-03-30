@@ -16,6 +16,7 @@ class App:
     def __init__(
         self,
         router: Router,
+        request_class: structure.Request = structure.Request,
         response: structure.Response = structure.Response(),
         config=None,
     ):
@@ -31,6 +32,7 @@ class App:
                 "shutdown": shutdown,
                 "logger": logging.debug,
             }
+        self.request_class = request_class
         self.router = router
         self.response = response
         self._app = asgi.ASGI(self)

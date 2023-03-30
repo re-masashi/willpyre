@@ -176,6 +176,7 @@ class Response:
         self.headers["content-type"] = self.content_type
         self.body = body
         self.status = status
+        self.get_body = lambda : self.body
 
 
 class Request:
@@ -250,7 +251,7 @@ class Response404(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/html"
-        self.body = "Not found"
+        self.body =   "Not found"
         self.status = 404
 
 
@@ -258,7 +259,7 @@ class Response405(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/html"
-        self.body = "Method not allowed"
+        self.body =   "Method not allowed"
         self.status = 405
 
 
@@ -266,7 +267,7 @@ class Response500(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/html"
-        self.body = "Internal Server Error"
+        self.body =   "Internal Server Error"
         self.status = 500
 
 
@@ -274,7 +275,7 @@ class Response404JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
-        self.body = str(
+        self.body =   str(
             schema_to_json(error_schema("Not found", 404)),
         )
         self.status = 404
@@ -284,7 +285,7 @@ class Response405JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
-        self.body = str(
+        self.body =   str(
             schema_to_json(error_schema("Method is invalid", 405)),
         )
         self.status = 405
@@ -294,7 +295,7 @@ class Response500JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
-        self.body = str(schema_to_json(error_schema("Internal server error", 500)))
+        self.body =   str(schema_to_json(error_schema("Internal server error", 500)))
         self.status = 500
 
 
@@ -302,7 +303,7 @@ class Response422JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
-        self.body = str(schema_to_json(error_schema("Validation error", 422)))
+        self.body =   str(schema_to_json(error_schema("Validation error", 422)))
         self.status = 422
 
 
@@ -317,7 +318,7 @@ class Redirect(Response):
 
     def __init__(self, location: str, status: int = 303):
         super().__init__()
-        self.body = "Redirecting to " + location
+        self.body =   "Redirecting to " + location
         self.status = (
             status  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections
         )
@@ -401,7 +402,7 @@ class HTTPException(Exception, Response):
         Response.__init__(self)
         self.status = 404
         self.content_type = content_type
-        self.body = body
+        self.body =   body
 
 
 class JSONResponse(Response):
@@ -416,7 +417,7 @@ class JSONResponse(Response):
         super().__init__(
             headers=headers, cookies=cookies, content_type=content_type, status=status
         )
-        self.body = json.dumps(data)
+        self.body =   json.dumps(data)
 
 
 class TextResponse(Response):
@@ -434,7 +435,7 @@ class TextResponse(Response):
             content_type=content_type, 
             status=status,
         )
-        self.body = data
+        self.body =   data
 
 
 class HTMLResponse(Response):
@@ -452,4 +453,4 @@ class HTMLResponse(Response):
             content_type=content_type, 
             status=status,
         )
-        self.body = data
+        self.body =   data

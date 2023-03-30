@@ -23,7 +23,7 @@ copyright = "2021, Nafi Amaan Hossain"
 author = "Nafi Amaan Hossain"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.9-dev"
+release = "0.0.11-dev"
 
 
 # -- General configuration ---------------------------------------------------
