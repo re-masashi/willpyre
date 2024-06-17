@@ -1,7 +1,16 @@
 from willpyre import App, Router, JSONResponse, Cookie, TextResponse, Redirect
+from willpyre.structure import HijackedMiddlewareResponse
 
 
 router = Router()  # Use APIRouter maybe
+
+
+async def is_funky_fumo_middleware(request, response):
+    if "funky" in request.query.get("user", ""):
+        return (request, response)
+    else:
+        response.body = "NO! ONLY FUNKY FUMOS ARE ALLOWED HERE!"
+        return (request, HijackedMiddlewareResponse(response))
 
 
 @router.get("/")
@@ -87,6 +96,9 @@ async def multi(req, res):
     print("content type", req.content_type)
     return TextResponse(req.files.get("foo", "").content)
 
+@router.get("/fumo", middlewares=[is_funky_fumo_middleware])
+async def fumo(req, res):
+    return TextResponse("Welcome Fumo!")
 
 router.add_route("/others", "FETCH", other_methods)
 router.add_route("/others", "TRACE", other_methods)
@@ -116,7 +128,6 @@ class Middleware:
             )
         else:
             await self.app(scope, receive, send)
-
 
 main = App(router)
 main.add_middleware(Middleware)
