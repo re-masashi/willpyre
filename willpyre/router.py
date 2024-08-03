@@ -4,6 +4,7 @@ from collections import namedtuple
 import traceback
 import re
 import os
+import mimetypes
 from .kua import Routes
 from .structure import (
     HTTPException,
@@ -457,13 +458,13 @@ class Router(StaticRouter):
 
         async def static(req, res):
             filepath = req.params.get('filepath')
-            print(filepath)
             base_path = dir_path
             for part in filepath:
                 base_path = os.path.join(base_path, part)
             if os.path.exists(base_path):
                 with open(base_path) as f:
                     res.body = f.read()
+                    res.headers['content-type'] = mimetypes.guess_type(base_path)[0]
             else:
                 res = Response404()
             return res

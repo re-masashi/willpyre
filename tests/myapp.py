@@ -107,8 +107,6 @@ router.add_route("/others", "PUT", other_methods)
 
 router.add_static('/assets', '.')
 
-pprint.pprint(router.routes)
-
 class Middleware:
     def __init__(self, app, **options):
         self.app = app
