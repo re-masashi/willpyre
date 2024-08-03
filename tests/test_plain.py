@@ -89,3 +89,9 @@ async def test_patch():
     async with TestClient(main) as client:
         resp = await client.patch("/others")
         assert resp.text == "others"
+
+@pytest.mark.asyncio
+async def test_static():
+    async with TestClient(main) as client:
+        resp = await client.get("/static/myapp.py")
+        assert 'import' in resp.text

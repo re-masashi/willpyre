@@ -1,6 +1,6 @@
 from willpyre import App, Router, JSONResponse, Cookie, TextResponse, Redirect
 from willpyre.structure import HijackedMiddlewareResponse
-
+import pprint
 
 router = Router()  # Use APIRouter maybe
 
@@ -105,6 +105,9 @@ router.add_route("/others", "TRACE", other_methods)
 router.add_route("/others", "PATCH", other_methods)
 router.add_route("/others", "PUT", other_methods)
 
+router.add_static('/assets', '.')
+
+pprint.pprint(router.routes)
 
 class Middleware:
     def __init__(self, app, **options):
