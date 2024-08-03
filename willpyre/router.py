@@ -442,6 +442,31 @@ class Router(StaticRouter):
         #    await self.send({"type": "websocket.close", "code": 1006})
         raise NotImplementedError("You need to implement websockets, to use it.")
 
+    def add_static(self, path: str, file_path: str = None, **opts) -> Callable:
+        """
+        This is meant to be used as a decorator on a function, that will be executed on a trace request to the path.
+
+        Args:
+          self: :class:`Router`
+          path(str): The Request path
+
+        """
+
+        @self.get(path+":*filepath")
+        async def static(req, res):
+            filepath = req.params.get('filepath')
+            path = 'static/'
+            for part in filepath:
+                path += part+'/'
+            re.sub("\.\./", "", path) # prevent users from climbing up the directory
+            path = path[:-1]
+            if os.path.exists(path):
+                res.body = open(path).read()
+                res.headers["connection"] = "close" # No need of keep-alive
+                res.content_type = mimetypes.guess_type(path)[0]
+            else:
+                res = Response404()
+            return res
 
 class OpenAPIRouter(Router):  # pragma: no cover
     """
@@ -605,6 +630,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
 
         if not path_parameters:
             path_parameters = []
+            
         if not body_parameters:
             body_parameters = []
 
@@ -883,6 +909,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         return self.openapi_schema
 
     async def handle(self, request: Request) -> Response:
+
         response = self.config.get("response", JSONResponse())
         if request.path[-1] != "/":
             request.path += "/"
@@ -905,6 +932,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
             request.params, variablized_url = self.KuaRoutes.match(request.path)
             matched_route_data = response_routes[variablized_url]
             response_ = None
+
             for middleware in matched_route_data.middlewares:
                 if response_:
                     (request, response_) = await middleware(request, response_)
@@ -913,6 +941,8 @@ class OpenAPIRouter(Router):  # pragma: no cover
 
                 if isinstance(response_, HijackedMiddlewareResponse):
                     return response_.response
+
+            # validate_json(req.body)
 
             if response_:
                 response_ = await matched_route_data.handler(request, response_)
