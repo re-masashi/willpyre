@@ -451,6 +451,8 @@ class Router(StaticRouter):
           path(str): The Request path
 
         """
+        if path[-1]!='/':
+            path = path+'/'
 
         @self.get(path+":*filepath")
         async def static(req, res):
