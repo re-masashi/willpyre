@@ -30,7 +30,8 @@ from .openapi import (
 )
 from .common import router_config, apirouter_config
 
-RouteData = namedtuple("RouterData", ["handler", "middlewares", "pass_through"])
+RouteData = namedtuple(
+    "RouterData", ["handler", "middlewares", "pass_through"])
 
 
 class StaticRouter:
@@ -89,7 +90,8 @@ class StaticRouter:
         if path[-1] != "/":
             path += "/"
         self.add_endpoint(path, endpoint_name)
-        self.routes[method][path] = RouteData(handler, middlewares, pass_through)
+        self.routes[method][path] = RouteData(
+            handler, middlewares, pass_through)
 
     def add_method(self, method: str):  # pragma: no cover
         """
@@ -385,7 +387,7 @@ class Router(StaticRouter):
         match = re.match("/[^/]+", request.path)
         if match is not None:
             if match.group()[1:] in self.embeds.keys():
-                request.path = request.path[match.span()[1] :]
+                request.path = request.path[match.span()[1]:]
                 return await self.embeds[match.group()[1:]].handle(request)
         try:
             response_routes = self.routes[request.method]
@@ -402,7 +404,8 @@ class Router(StaticRouter):
 
         try:
             # todo: add middleware suport
-            request.params, variablized_url = self.KuaRoutes.match(request.path)
+            request.params, variablized_url = self.KuaRoutes.match(
+                request.path)
             matched_route_data = response_routes[variablized_url]
             response_ = None
             for middleware in matched_route_data.middlewares:
@@ -448,7 +451,8 @@ class Router(StaticRouter):
         #     await self.ws_routes[variablized_url](scope, send, recieve)
         # except (HTTPError, KeyError):
         #    await self.send({"type": "websocket.close", "code": 1006})
-        raise NotImplementedError("You need to implement websockets, to use it.")
+        raise NotImplementedError(
+            "You need to implement websockets, to use it.")
 
     def add_static(self, path: str, dir_path: str = None, **opts) -> Callable:
         """
@@ -470,7 +474,8 @@ class Router(StaticRouter):
             if os.path.exists(base_path):
                 with open(base_path) as f:
                     res.body = f.read()
-                    res.headers["content-type"] = mimetypes.guess_type(base_path)[0]
+                    res.headers["content-type"] = mimetypes.guess_type(base_path)[
+                        0]
             else:
                 res = Response404()
             return res
@@ -949,7 +954,8 @@ class OpenAPIRouter(Router):  # pragma: no cover
             response_ = self.config.get("500Response", Response500JSON)()  # noqa
             return response_
         try:
-            request.params, variablized_url = self.KuaRoutes.match(request.path)
+            request.params, variablized_url = self.KuaRoutes.match(
+                request.path)
             matched_route_data = response_routes[variablized_url]
             response_ = None
 

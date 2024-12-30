@@ -29,7 +29,8 @@ class ASGI:
                 response_cookies = [
                     [
                         b"Set-Cookie",
-                        cookie_.encode() + b"=" + response_.cookies[cookie_].cookie_str,
+                        cookie_.encode() + b"=" +
+                        response_.cookies[cookie_].cookie_str,
                     ]
                     for cookie_ in response_.cookies.keys()
                 ]
@@ -70,7 +71,8 @@ class ASGI:
                 body += message.get("body", b"")
                 more_body = message.get("more_body", False)
             else:
-                raise RuntimeError(f"Unhandled message type: {message['type']}")
+                raise RuntimeError(
+                    f"Unhandled message type: {message['type']}")
         return body
 
     async def _send(self, send, response: structure.Response, cookies: list) -> None:

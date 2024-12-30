@@ -8,7 +8,8 @@ from .schema import error_schema, validate_json, ErrorResponse, schema_to_json
 class TypedMultiMap(dict):
     def __init__(self, mapping: Union[Any, None] = None):
         if isinstance(mapping, TypedMultiMap):
-            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists()))  # type: ignore
+            dict.__init__(self, ((k, l[:])
+                          for k, l in mapping.lists()))  # type: ignore
         elif isinstance(mapping, dict):
             temp = dict()
             for key, value in mapping.items():
@@ -257,7 +258,8 @@ class Request:
         self.content_type: str = content_type
 
         if content_type.startswith("multipart/form-data"):
-            self.body, self.files = parse_multipart(content_type, self.raw_body)
+            self.body, self.files = parse_multipart(
+                content_type, self.raw_body)
             # print(self.files)
         elif content_type.startswith("application/json"):
             self.body = TypedMultiMap(json.loads(self.raw_body.decode()))
@@ -321,7 +323,8 @@ class Response500JSON(Response):
     def __init__(self):
         super().__init__()
         self.headers["content-type"] = "text/json"
-        self.body = str(schema_to_json(error_schema("Internal server error", 500)))
+        self.body = str(schema_to_json(
+            error_schema("Internal server error", 500)))
         self.status = 500
 
 
@@ -378,7 +381,8 @@ class Cookie:
 
     """
 
-    __slots__ = ("value", "max_age", "cookie_str", "same_site", "secure", "http_only")
+    __slots__ = ("value", "max_age", "cookie_str",
+                 "same_site", "secure", "http_only")
 
     def __init__(
         self,

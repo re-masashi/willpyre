@@ -246,7 +246,8 @@ def populate_schema(schema, **kwargs):
     setattr(_copy, "__slots__", schema.__slots__)
     for arg, val in kwargs.items():
         if schema.__FIELDS__.get(arg, None) is not None:
-            _copy.__FIELDS__[arg] = Field(arg, _copy.__FIELDS__[arg].annotation, val)
+            _copy.__FIELDS__[arg] = Field(
+                arg, _copy.__FIELDS__[arg].annotation, val)
     return _copy
 
 
