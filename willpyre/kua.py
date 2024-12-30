@@ -337,7 +337,8 @@ class Routes:
                 )
 
             if part in curr:
-                to_visit.append((curr[part], curr_variable_parts, depth + 1))  # type: ignore
+                # type: ignore
+                to_visit.append((curr[part], curr_variable_parts, depth + 1))
 
         raise HTTPException()
 

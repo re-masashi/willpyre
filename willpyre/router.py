@@ -20,7 +20,7 @@ from .structure import (
     Response404JSON,
     JSONResponse,
     HTMLResponse,
-    HijackedMiddlewareResponse
+    HijackedMiddlewareResponse,
 )
 from .schema import schema_repr, ValidationError
 from .openapi import (
@@ -30,7 +30,8 @@ from .openapi import (
 )
 from .common import router_config, apirouter_config
 
-RouteData = namedtuple('RouterData', ['handler', 'middlewares', 'pass_through'])
+RouteData = namedtuple("RouterData", ["handler", "middlewares", "pass_through"])
+
 
 class StaticRouter:
     """
@@ -57,7 +58,6 @@ class StaticRouter:
         self.bodied_methods = ("POST", "PUT", "PATCH")
 
         self.ws_routes = dict()
-        self.config = dict()
         self.endpoints = dict()
         self.endpoint_prefix = endpoint_prefix
         if not config:
@@ -65,10 +65,10 @@ class StaticRouter:
         self.config = config
 
     def add_route(
-        self, 
-        path: str, 
-        method: str, 
-        handler: Callable, 
+        self,
+        path: str,
+        method: str,
+        handler: Callable,
         endpoint_name: str = "",
         middlewares: list = [],
         pass_through: list = [],
@@ -83,7 +83,7 @@ class StaticRouter:
           handler: The function that will be called in response to this route for the given method.
           endpoint_name: The name of the endpoint for this path.
           middlewares: The list of middleware functions to call before calling the `handler`. Default: []
-          pass_through: The functions to pass the request and response through after the `handler` has returned a value. 
+          pass_through: The functions to pass the request and response through after the `handler` has returned a value.
 
         """
         if path[-1] != "/":
@@ -140,7 +140,9 @@ class StaticRouter:
         """
 
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="GET", handler=handler, endpoint_name=name, **opts)
+            self.add_route(
+                path=path, method="GET", handler=handler, endpoint_name=name, **opts
+            )
             return handler
 
         return decorator
@@ -174,7 +176,9 @@ class StaticRouter:
         """
 
         def decorator(handler: Callable) -> Callable:
-            self.add_route(path=path, method="PUT", handler=handler, endpoint_name=name, **opts)
+            self.add_route(
+                path=path, method="PUT", handler=handler, endpoint_name=name, **opts
+            )
             return handler
 
         return decorator
@@ -281,7 +285,7 @@ class StaticRouter:
           :class:`willpyre.structure.Response`
 
         """
-        response = self.config.get("response", HTMLResponse())
+        response = self.config.get("response", HTMLResponse)()
         if request.path[-1] != "/":
             request.path += "/"
         try:
@@ -340,10 +344,10 @@ class Router(StaticRouter):
         super().__init__(endpoint_prefix)
 
     def add_route(
-        self, 
-        path: str, 
-        method: str, 
-        handler: Callable, 
+        self,
+        path: str,
+        method: str,
+        handler: Callable,
         endpoint_name: str = "",
         middlewares: list = [],
         pass_through: list = [],
@@ -352,7 +356,9 @@ class Router(StaticRouter):
             path += "/"
         variablized_url = self.KuaRoutes.add(path)
         self.add_endpoint(path, endpoint_name)
-        self.routes[method][variablized_url] = RouteData(handler, middlewares, pass_through)
+        self.routes[method][variablized_url] = RouteData(
+            handler, middlewares, pass_through
+        )
 
     def add_ws_route(self, path: str, method: str, handler: Callable) -> None:
         raise NotImplementedError("You need to implement websockets.")
@@ -373,7 +379,7 @@ class Router(StaticRouter):
             pass
 
     async def handle(self, request: Request) -> Response:
-        response = self.config.get("response", HTMLResponse())
+        response = self.config.get("response", HTMLResponse)()
         if request.path[-1] != "/":
             request.path += "/"
         match = re.match("/[^/]+", request.path)
@@ -386,12 +392,12 @@ class Router(StaticRouter):
         except KeyError:
             # pdb.set_trace()
             # Key errors occur on when no method is found on a route.
-            response_ = self.config.get("405Response", Response405())
+            response_ = self.config.get("405Response", Response405)()
             return response_
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())
-            response_ = self.config.get("500Response", Response500())  # noqa
+            response_ = self.config.get("500Response", Response500)()  # noqa
             return response_
 
         try:
@@ -424,12 +430,12 @@ class Router(StaticRouter):
 
             return response_
         except (HTTPException, ValidationError, KeyError) as e:
-            response_ = self.config.get("404Response", Response404())
+            response_ = self.config.get("404Response", Response404)()
             return response_
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())
-            response_ = self.config.get("500Response", Response500())
+            response_ = self.config.get("500Response", Response500)()
             return response_
 
     async def handleWS(self, scope: dict, send, recieve) -> None:  # pragma: no cover
@@ -453,32 +459,33 @@ class Router(StaticRouter):
           path(str): The Request path
 
         """
-        if path[-1]!='/':
-            path = path+'/'
+        if path[-1] != "/":
+            path = path + "/"
 
         async def static(req, res):
-            filepath = req.params.get('filepath')
+            filepath = req.params.get("filepath")
             base_path = dir_path
             for part in filepath:
                 base_path = os.path.join(base_path, part)
             if os.path.exists(base_path):
                 with open(base_path) as f:
                     res.body = f.read()
-                    res.headers['content-type'] = mimetypes.guess_type(base_path)[0]
+                    res.headers["content-type"] = mimetypes.guess_type(base_path)[0]
             else:
                 res = Response404()
             return res
 
         self.add_route(
-            path=path+':*filepath', 
-            method="GET", 
+            path=path + ":*filepath",
+            method="GET",
             handler=static,
         )
+
 
 class OpenAPIRouter(Router):  # pragma: no cover
     """
     OpenAPIRouter class has the HTTP methods, paths, and handlers and other info required for OpenAPI based docs.
-    
+
     Args:
       self: The class ``willpyre.structure.Request``
       description(str): Description of the API
@@ -550,7 +557,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         elif self.openapi_version.startswith("3.0"):
             self.openapi_base_url = "#/components/schemas/"
         else:
-            raise ValueError(f"{self.openapi_version } is an invalid version.")
+            raise ValueError(f"{self.openapi_version} is an invalid version.")
 
         super().__init__(endpoint_prefix)
         definitions_dict = {}
@@ -630,14 +637,21 @@ class OpenAPIRouter(Router):  # pragma: no cover
         body_parameters=None,
         **kwargs,
     ):
-        Router.add_route(self, path, method, handler, middlewares=middlewares, pass_through=pass_through)
+        Router.add_route(
+            self,
+            path,
+            method,
+            handler,
+            middlewares=middlewares,
+            pass_through=pass_through,
+        )
 
         if no_docs:
             return
 
         if not path_parameters:
             path_parameters = []
-            
+
         if not body_parameters:
             body_parameters = []
 
@@ -916,8 +930,7 @@ class OpenAPIRouter(Router):  # pragma: no cover
         return self.openapi_schema
 
     async def handle(self, request: Request) -> Response:
-
-        response = self.config.get("response", JSONResponse())
+        response = self.config.get("response", JSONResponse)()
         if request.path[-1] != "/":
             request.path += "/"
         try:
@@ -928,12 +941,12 @@ class OpenAPIRouter(Router):  # pragma: no cover
         except KeyError:
             # pdb.set_trace()
             # Key errors occur on when no method is found on a route.
-            response_ = self.config.get("405Response", Response405JSON())
+            response_ = self.config.get("405Response", Response405JSON)()
             return response_
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())
-            response_ = self.config.get("500Response", Response500JSON())  # noqa
+            response_ = self.config.get("500Response", Response500JSON)()  # noqa
             return response_
         try:
             request.params, variablized_url = self.KuaRoutes.match(request.path)
@@ -967,17 +980,17 @@ class OpenAPIRouter(Router):  # pragma: no cover
 
             return response_
         except ValidationError as e:
-            response_ = self.config.get("422Response", Response422JSON())
+            response_ = self.config.get("422Response", Response422JSON)()
             return response_
         except KeyError:
-            response_ = self.config.get("404Response", Response404JSON())
+            response_ = self.config.get("404Response", Response404JSON)()
             return response_
         except HTTPException:
-            response_ = self.config.get("404Response", Response404JSON())
+            response_ = self.config.get("404Response", Response404JSON)()
             return response_
 
         except Exception:
             # Catches other errors.
             self.config.get("logger_exception", print)(traceback.format_exc())
-            response_ = self.config.get("500Response", Response500JSON())
+            response_ = self.config.get("500Response", Response500JSON)()
             return response_

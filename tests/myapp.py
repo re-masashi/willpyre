@@ -96,16 +96,19 @@ async def multi(req, res):
     print("content type", req.content_type)
     return TextResponse(req.files.get("foo", "").content)
 
+
 @router.get("/fumo", middlewares=[is_funky_fumo_middleware])
 async def fumo(req, res):
     return TextResponse("Welcome Fumo!")
+
 
 router.add_route("/others", "FETCH", other_methods)
 router.add_route("/others", "TRACE", other_methods)
 router.add_route("/others", "PATCH", other_methods)
 router.add_route("/others", "PUT", other_methods)
 
-router.add_static('/assets', '.')
+router.add_static("/assets", ".")
+
 
 class Middleware:
     def __init__(self, app, **options):
@@ -129,6 +132,7 @@ class Middleware:
             )
         else:
             await self.app(scope, receive, send)
+
 
 main = App(router)
 main.add_middleware(Middleware)

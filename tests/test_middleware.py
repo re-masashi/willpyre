@@ -10,6 +10,7 @@ async def test_willpyre_middleware():
         assert resp.status_code == 200
         assert resp.text == "OK"
 
+
 @pytest.mark.asyncio
 async def test_willpyre_function_middleware():
     async with TestClient(main) as client:
