@@ -162,6 +162,16 @@ class Response:
 
     """
 
+    __slots__ = [
+        "headers",
+        "cookies",
+        "content_type",
+        "body",
+        "status",
+        "get_body",
+        "data",
+    ]
+
     def __init__(
         self,
         status=200,
@@ -177,6 +187,7 @@ class Response:
         self.body = body
         self.status = status
         self.get_body = lambda: self.body
+        self.data = dict()
 
 
 class Request:
@@ -193,6 +204,7 @@ class Request:
         "status",
         "files",
         "cookies",
+        "data",  # for random stuff to be attached to the request
     )
     """
 
@@ -235,6 +247,8 @@ class Request:
         self.raw_query = raw_query
         self.raw_body = raw_body
         self.query = TypedMultiMap(parse.parse_qs(raw_query.decode()))
+        self.data = dict()
+
         for header_pair in headers:
             self.headers[header_pair[0].decode()] = header_pair[1].decode()
 
@@ -412,15 +426,18 @@ class FileObject:
         del args
 
 
-class HTTPException(Exception, Response):
+class HTTPException(Exception):
     def __init__(
         self, status: int = 404, body: str = "Not found", content_type="text/html"
     ):
-        # Do not use super() here. Makes a mess of multiple inheritances.
-        Response.__init__(self)
-        self.status = 404
-        self.content_type = content_type
+        self.status = status
         self.body = body
+        self.content_type = content_type
+
+    def to_response(self):
+        return Response(
+            status=self.status, body=self.body, content_type=self.content_type
+        )
 
 
 class JSONResponse(Response):
